@@ -1,7 +1,7 @@
 from api.serializers import TaskSerializer
 
 from board.models import Task
-
+from board.models import DeletedTask
 from rest_framework import generics
 from rest_framework.authentication import SessionAuthentication
 from rest_framework.permissions import IsAuthenticated
@@ -30,3 +30,14 @@ class DetailTask(generics.RetrieveUpdateDestroyAPIView):
     def get_queryset(self):
         user = self.request.user
         return Task.objects.filter(owner=user)
+
+    def perform_destroy(self, instance):
+        # Сохранение информации о удаляемой задаче
+        DeletedTask.objects.create(
+            owner=instance.owner,  # Сохраняем владельца задачи
+            task_id=instance.task_id,  # Используем id задачи
+            name=instance.name,  # Сохраняем название задачи
+            description=instance.description,  # Сохраняем описание задачи
+        )
+        # Удаление оригинальной задачи
+        instance.delete()
