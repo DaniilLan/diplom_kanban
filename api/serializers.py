@@ -8,7 +8,7 @@ class TaskSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Task
-        fields = ('uuid', 'task_id', 'name', 'boardName', 'date', 'owner', 'description')
+        fields = ('uuid', 'task_id', 'name', 'boardName', 'date', 'owner', 'description', 'typeTask', 'priorityTask')
 
 
 class UserSerializer(serializers.ModelSerializer):

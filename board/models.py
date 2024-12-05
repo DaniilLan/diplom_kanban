@@ -23,6 +23,16 @@ class DeletedTask(models.Model):
 
 
 class Task(models.Model):
+
+    class TaskType(models.TextChoices):
+        TASK = 'task', 'Задача'
+        BUG = 'bug', 'Баг'
+
+    class PriorityLevel(models.TextChoices):
+        HIGH = 'high', 'Высокий'
+        MEDIUM = 'medium', 'Средний'
+        LOW = 'low', 'Низкий'
+
     owner = models.ForeignKey('auth.User', on_delete=models.CASCADE, related_name='tasks')
     uuid = models.UUIDField(default=uuid.uuid4, unique=True, primary_key=True, editable=False)
     task_id = models.PositiveIntegerField(unique=True, null=True, blank=True)
@@ -30,6 +40,8 @@ class Task(models.Model):
     boardName = models.CharField(max_length=12, choices=BoardNames.choices, default=BoardNames.ToDo)
     date = models.DateTimeField(auto_now_add=True)
     description = models.TextField(null=True, blank=True, verbose_name="Подробное описание")
+    typeTask = models.CharField(max_length=4, choices=TaskType.choices, null=True, blank=True)
+    priorityTask = models.CharField(max_length=6, choices=PriorityLevel.choices, null=True, blank=True)
 
     class Meta:
         verbose_name = 'Задача'

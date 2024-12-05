@@ -19,7 +19,9 @@ def home(request):
             'boardName': t.boardName,
             'date': str(localize(t.date)),
             'task_id': str(t.task_id),
-            'description': str(t.description)
+            'description': str(t.description),
+            'typeTask': str(t.typeTask),
+            'priorityTask': str(t.priorityTask),
         }
         all_tasks.append(t_dict)
     return render(request, 'index.html', {'tasks': all_tasks})
