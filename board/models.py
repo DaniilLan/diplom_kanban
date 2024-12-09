@@ -10,12 +10,26 @@ class BoardNames(models.TextChoices):
     Done = 'Выполнено'
 
 
+class TaskType(models.TextChoices):
+    TASK = 'task', 'Задача'
+    BUG = 'bug', 'Баг'
+
+
+class PriorityLevel(models.TextChoices):
+    HIGH = 'high', 'Высокий'
+    MEDIUM = 'medium', 'Средний'
+    LOW = 'low', 'Низкий'
+
+
 class DeletedTask(models.Model):
+
     owner = models.ForeignKey('auth.User', on_delete=models.CASCADE, related_name='deleted_tasks')
     task_id = models.PositiveIntegerField(unique=True)  # task_id удаленной задачи
     name = models.CharField(max_length=500)
     description = models.TextField(null=True, blank=True, verbose_name="Подробное описание")
     delete_date = models.DateTimeField(auto_now_add=True)
+    typeTask = models.CharField(max_length=4, choices=TaskType.choices, null=True, blank=True)
+    priorityTask = models.CharField(max_length=6, choices=PriorityLevel.choices, null=True, blank=True)
 
     class Meta:
         verbose_name = 'Удаленная задача'
@@ -23,15 +37,6 @@ class DeletedTask(models.Model):
 
 
 class Task(models.Model):
-
-    class TaskType(models.TextChoices):
-        TASK = 'task', 'Задача'
-        BUG = 'bug', 'Баг'
-
-    class PriorityLevel(models.TextChoices):
-        HIGH = 'high', 'Высокий'
-        MEDIUM = 'medium', 'Средний'
-        LOW = 'low', 'Низкий'
 
     owner = models.ForeignKey('auth.User', on_delete=models.CASCADE, related_name='tasks')
     uuid = models.UUIDField(default=uuid.uuid4, unique=True, primary_key=True, editable=False)
