@@ -49,6 +49,23 @@
       background-position: center;
       background-repeat: no-repeat;
     }
+
+    @keyframes tilt-shaking {
+        0% { transform: rotate(0deg); }
+        25% { transform: rotate(5deg); }
+        50% { transform: rotate(0deg); }
+        75% { transform: rotate(-5deg); }
+        100% { transform: rotate(0deg); }
+    }
+
+    .shake {
+        display: inline-block;
+        animation: tilt-shaking 0.5s ease-in-out;
+    }
+
+    .shake:hover {
+        animation: tilt-shaking 0.5s ease-in-out;
+    }
   </style>
 </head>
 <body>
