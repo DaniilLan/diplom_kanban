@@ -5,11 +5,11 @@
 {% include 'messages.html' %}
 <!--Форма регистрации--> 
 
-<div class="flex items-center justify-center min-h-screen bg-gray-300">
-   <div class="px-8 py-6 mt-4 mb-4 text-left bg-white shadow-lg rounded-lg">
+<div class="flex items-center justify-center min-h-screen bg-gray-800">
+   <div class="px-8 py-6 mt-4 mb-4 text-left bg-gray-900 shadow-lg rounded-lg">
    	<h1 class="text-3xl font-bold text-blue-700 text-center"><i class="uil uil-edit mr-2"></i>Kanban</h1>
-      <h3 class="text-2xl font-bold text-gray-700 text-center">Регистрация</h3>
-        <div class="mt-4 px-4 py-4 text-gray-700">
+      <h3 class="text-2xl font-bold text-gray-100 text-center">Регистрация</h3>
+        <div class="mt-4 px-4 py-4 text-gray-100">
 		<form method="POST">
 		{% csrf_token %}
 		{{ register_form|crispy }}                    
