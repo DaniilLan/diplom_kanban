@@ -254,7 +254,7 @@ const api_client = axios.create({
     headers: { 'X-CSRFToken': csrftoken },
 });
 
-const addTask = async (name, board, description, taskType, priorityLevel) => {
+const addTask = async (name, board, description, taskType, priorityTask) => {
     try {
         const res = await api_client.post('/tasks/', {name, boardName: board, description, typeTask, priorityTask});
         location.reload();

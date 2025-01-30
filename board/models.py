@@ -15,7 +15,7 @@ class TaskType(models.TextChoices):
     BUG = 'bug', 'Баг'
 
 
-class PriorityLevel(models.TextChoices):
+class PriorityTask(models.TextChoices):
     HIGH = 'high', 'Высокий'
     MEDIUM = 'medium', 'Средний'
     LOW = 'low', 'Низкий'
@@ -29,7 +29,7 @@ class DeletedTask(models.Model):
     description = models.TextField(null=True, blank=True, verbose_name="Подробное описание")
     delete_date = models.DateTimeField(auto_now_add=True)
     typeTask = models.CharField(max_length=4, choices=TaskType.choices, null=True, blank=True)
-    priorityTask = models.CharField(max_length=6, choices=PriorityLevel.choices, null=True, blank=True)
+    priorityTask = models.CharField(max_length=6, choices=PriorityTask.choices, null=True, blank=True)
 
     class Meta:
         verbose_name = 'Удаленная задача'
@@ -46,7 +46,7 @@ class Task(models.Model):
     date = models.DateTimeField(auto_now_add=True)
     description = models.TextField(null=True, blank=True, verbose_name="Подробное описание")
     typeTask = models.CharField(max_length=4, choices=TaskType.choices, null=True, blank=True)
-    priorityTask = models.CharField(max_length=6, choices=PriorityLevel.choices, null=True, blank=True)
+    priorityTask = models.CharField(max_length=6, choices=PriorityTask.choices, null=True, blank=True)
 
     class Meta:
         verbose_name = 'Задача'
