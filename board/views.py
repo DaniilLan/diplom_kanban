@@ -6,6 +6,7 @@ from django.shortcuts import redirect, render
 from django.utils.formats import localize
 
 from .forms import NewUserForm
+from .models import format_minutes_to_time
 
 
 @login_required
@@ -13,6 +14,8 @@ def home(request):
     all_tasks = []
     t_list = request.user.tasks.all()
     for t in t_list:
+        # Преобразуем время из минут в формат "Xд Yч Zм"
+        time_estimate_formatted = format_minutes_to_time(t.timeEstimateMinutes) if t.timeEstimateMinutes else "0м"
         t_dict = {
             'uuid': str(t.uuid),
             'name': t.name if t.name is not None else 'Без названия',
@@ -22,6 +25,7 @@ def home(request):
             'description': str(t.description),
             'typeTask': str(t.typeTask),
             'priorityTask': str(t.priorityTask),
+            'timeEstimateMinutes': time_estimate_formatted  # Используем отформатированное время
         }
         all_tasks.append(t_dict)
     return render(request, 'index.html', {'tasks': all_tasks})

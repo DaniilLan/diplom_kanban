@@ -3,6 +3,23 @@ from django.db import models
 from django.db.models import Max
 
 
+def format_minutes_to_time(minutes):
+    """
+    Преобразует минуты в строку формата "Xд Yч Zм".
+    """
+    days = minutes // (24 * 60)
+    hours = (minutes % (24 * 60)) // 60
+    mins = minutes % 60
+    time_parts = []
+    if days > 0:
+        time_parts.append(f"{days}д")
+    if hours > 0:
+        time_parts.append(f"{hours}ч")
+    if mins > 0:
+        time_parts.append(f"{mins}м")
+    return " ".join(time_parts) if time_parts else "0м"
+
+
 class BoardNames(models.TextChoices):
     ToDo = 'Сделать'
     InProgress = 'В процессе'
@@ -20,7 +37,6 @@ class PriorityTask(models.TextChoices):
     MEDIUM = 'medium', 'Средний'
     LOW = 'low', 'Низкий'
 
-
 class DeletedTask(models.Model):
 
     owner = models.ForeignKey('auth.User', on_delete=models.CASCADE, related_name='deleted_tasks')
@@ -30,6 +46,7 @@ class DeletedTask(models.Model):
     delete_date = models.DateTimeField(auto_now_add=True)
     typeTask = models.CharField(max_length=4, choices=TaskType.choices, null=True, blank=True)
     priorityTask = models.CharField(max_length=6, choices=PriorityTask.choices, null=True, blank=True)
+    timeEstimateMinutes = models.PositiveIntegerField(null=True, blank=True, verbose_name="Оценка времени (в минутах)")
 
     class Meta:
         verbose_name = 'Удаленная задача'
@@ -47,6 +64,7 @@ class Task(models.Model):
     description = models.TextField(null=True, blank=True, verbose_name="Подробное описание")
     typeTask = models.CharField(max_length=4, choices=TaskType.choices, null=True, blank=True)
     priorityTask = models.CharField(max_length=6, choices=PriorityTask.choices, null=True, blank=True)
+    timeEstimateMinutes = models.PositiveIntegerField(null=True, blank=True, verbose_name="Оценка времени (в минутах)")
 
     class Meta:
         verbose_name = 'Задача'
@@ -67,3 +85,16 @@ class Task(models.Model):
     def __str__(self):
         return f"{self.name} (T-{self.task_id})"
 
+class TimeLog(models.Model):
+    task = models.ForeignKey(Task, on_delete=models.CASCADE, related_name='time_logs')
+    owner = models.ForeignKey('auth.User', on_delete=models.CASCADE, related_name='time_logs')
+    minutes_spent = models.PositiveIntegerField(verbose_name="Затраченное время (в минутах)")
+    date = models.DateTimeField(auto_now_add=True, verbose_name="Дата записи")
+    comment = models.TextField(null=True, blank=True, verbose_name="Комментарий")
+
+    class Meta:
+        verbose_name = 'Лог времени'
+        verbose_name_plural = 'Логи времени'
+
+    def __str__(self):
+        return f"{self.task.name} - {self.minutes_spent} минут ({self.owner.username})"

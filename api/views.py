@@ -40,6 +40,7 @@ class DetailTask(generics.RetrieveUpdateDestroyAPIView):
             description=instance.description,  # Сохраняем описание задачи
             typeTask=instance.typeTask,  # Сохраняем тип задачи
             priorityTask=instance.priorityTask, # Сохраняем приоритет задачи
+            timeEstimateMinutes=instance.timeEstimateMinutes # Сохраняем приоритет задачи
         )
         # Удаление оригинальной задачи
         instance.delete()
