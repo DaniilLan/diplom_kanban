@@ -114,7 +114,7 @@
                               <div x-show="t.edit == false">
                                 <div x-show="t.edit == false" class="bg-gray-900 rounded-lg shadow mb-3 p-2" draggable="true" @dragstart="onDragStart(event, t.uuid)">
                                   <div class="flex justify-between items-center">
-                                    <a x-text="(t.typeTask === 'bug' ? 'BUG-' : 'TASK-') + t.task_id" @click.prevent="showModalEdit(board, t.uuid, t.name, t.description, t.typeTask, t.priorityTask)" href="#" class="inline-flex items-center text-sm font-medium" :class="`text-${colorSelected.value}-500 hover:text-${colorSelected.value}-600`">
+                                    <a x-text="(t.typeTask === 'bug' ? 'BUG-' : 'TASK-') + t.task_id" @click.prevent="" href="#" class="inline-flex items-center text-sm font-medium" :class="`text-${colorSelected.value}-500 hover:text-${colorSelected.value}-600`">
                                     </a>
                                       <div class="flex items-center">
                                           <i class="bx bxs-circle mr-1"
