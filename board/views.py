@@ -4,7 +4,6 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import AuthenticationForm
 from django.shortcuts import redirect, render
 from django.utils.formats import localize
-
 from .forms import NewUserForm
 from .models import format_minutes_to_time
 
@@ -29,7 +28,6 @@ def home(request):
         }
         all_tasks.append(t_dict)
     return render(request, 'index.html', {'tasks': all_tasks})
-
 
 def register_request(request):
     if request.method == 'POST':

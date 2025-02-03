@@ -66,6 +66,7 @@ class Task(models.Model):
     priorityTask = models.CharField(max_length=6, choices=PriorityTask.choices, null=True, blank=True)
     timeEstimateMinutes = models.PositiveIntegerField(null=True, blank=True, verbose_name="Оценка времени (в минутах)")
 
+
     class Meta:
         verbose_name = 'Задача'
         verbose_name_plural = 'Задачи'
@@ -88,7 +89,7 @@ class Task(models.Model):
 class TimeLog(models.Model):
     task = models.ForeignKey(Task, on_delete=models.CASCADE, related_name='time_logs')
     owner = models.ForeignKey('auth.User', on_delete=models.CASCADE, related_name='time_logs')
-    minutes_spent = models.PositiveIntegerField(verbose_name="Затраченное время (в минутах)")
+    minutesSpent = models.PositiveIntegerField(verbose_name="Затраченное время (в минутах)")
     date = models.DateTimeField(auto_now_add=True, verbose_name="Дата записи")
     comment = models.TextField(null=True, blank=True, verbose_name="Комментарий")
 
@@ -97,4 +98,5 @@ class TimeLog(models.Model):
         verbose_name_plural = 'Логи времени'
 
     def __str__(self):
-        return f"{self.task.name} - {self.minutes_spent} минут ({self.owner.username})"
+        return f"{self.task.name} - {self.minutesSpent} минут ({self.owner.username})"
+

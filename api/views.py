@@ -1,6 +1,8 @@
-from api.serializers import TaskSerializer
+from rest_framework.response import Response
+from rest_framework.views import APIView
 
-from board.models import Task
+from api.serializers import TaskSerializer, TimeLogSerializer
+from board.models import Task, TimeLog
 from board.models import DeletedTask
 from rest_framework import generics
 from rest_framework.authentication import SessionAuthentication
@@ -12,6 +14,19 @@ class ListTask(generics.ListCreateAPIView):
     serializer_class = TaskSerializer
     authentication_classes = [SessionAuthentication]
     permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        user = self.request.user
+        return Task.objects.filter(owner=user)
+
+    def perform_create(self, serializer):
+        serializer.save(owner=self.request.user)
+
+class TimeLogList(APIView):
+    def get(self, request, task_id):
+        timelogs = TimeLog.objects.filter(owner=2)
+        serializer = TimeLogSerializer(timelogs, many=True)
+        return Response(serializer.data)
 
     def get_queryset(self):
         user = self.request.user
@@ -32,7 +47,7 @@ class DetailTask(generics.RetrieveUpdateDestroyAPIView):
         return Task.objects.filter(owner=user)
 
     def perform_destroy(self, instance):
-        # Сохранение информации о удаляемой задаче
+        # Сохранение информации об удаляемой задаче
         DeletedTask.objects.create(
             owner=instance.owner,  # Сохраняем владельца задачи
             task_id=instance.task_id,  # Используем id задачи
@@ -40,7 +55,7 @@ class DetailTask(generics.RetrieveUpdateDestroyAPIView):
             description=instance.description,  # Сохраняем описание задачи
             typeTask=instance.typeTask,  # Сохраняем тип задачи
             priorityTask=instance.priorityTask, # Сохраняем приоритет задачи
-            timeEstimateMinutes=instance.timeEstimateMinutes # Сохраняем приоритет задачи
         )
         # Удаление оригинальной задачи
         instance.delete()
+

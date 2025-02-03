@@ -18,10 +18,15 @@ from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import include, path
 
+from api.views import TimeLogList, ListTask
+
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('board.urls')),
     path('api/', include('api.urls')),
+    path('tasks/', ListTask.as_view()),
+    path('api/timelogs/<int:task_id>/', TimeLogList.as_view(), name='timelog-list'),
+
 ]
 
 if settings.DEBUG:
