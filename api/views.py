@@ -22,15 +22,16 @@ class ListTask(generics.ListCreateAPIView):
     def perform_create(self, serializer):
         serializer.save(owner=self.request.user)
 
-class TimeLogList(APIView):
-    def get(self, request, task_id):
-        timelogs = TimeLog.objects.filter(owner=2)
-        serializer = TimeLogSerializer(timelogs, many=True)
-        return Response(serializer.data)
+class TimeLogList(generics.ListCreateAPIView):
+    queryset = TimeLog.objects.all()
+    serializer_class = TimeLogSerializer
+    authentication_classes = [SessionAuthentication]
+    permission_classes = [IsAuthenticated]
+
 
     def get_queryset(self):
         user = self.request.user
-        return Task.objects.filter(owner=user)
+        return TimeLog.objects.filter(owner=user)
 
     def perform_create(self, serializer):
         serializer.save(owner=self.request.user)
@@ -58,4 +59,3 @@ class DetailTask(generics.RetrieveUpdateDestroyAPIView):
         )
         # Удаление оригинальной задачи
         instance.delete()
-

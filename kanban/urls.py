@@ -25,8 +25,7 @@ urlpatterns = [
     path('', include('board.urls')),
     path('api/', include('api.urls')),
     path('tasks/', ListTask.as_view()),
-    path('api/timelogs/<int:task_id>/', TimeLogList.as_view(), name='timelog-list'),
-
+    path('timelogs/', TimeLogList.as_view(), name='timelog-list'),
 ]
 
 if settings.DEBUG:

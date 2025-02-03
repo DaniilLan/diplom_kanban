@@ -26,7 +26,12 @@ class TimeLogSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = TimeLog
-        fields = ['minutesSpent', 'date', 'comment', 'owner_username']
+        fields = ('task',
+                  'minutesSpent',
+                  'date',
+                  'comment',
+                  'owner'
+                  )
 
 class UserSerializer(serializers.ModelSerializer):
     tasks = serializers.PrimaryKeyRelatedField(many=True, read_only=True)

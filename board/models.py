@@ -87,8 +87,8 @@ class Task(models.Model):
         return f"{self.name} (T-{self.task_id})"
 
 class TimeLog(models.Model):
-    task = models.ForeignKey(Task, on_delete=models.CASCADE, related_name='time_logs')
-    owner = models.ForeignKey('auth.User', on_delete=models.CASCADE, related_name='time_logs')
+    task = models.ForeignKey(Task, on_delete=models.CASCADE)
+    owner = models.ForeignKey('auth.User', on_delete=models.CASCADE, related_name='timelogs')
     minutesSpent = models.PositiveIntegerField(verbose_name="Затраченное время (в минутах)")
     date = models.DateTimeField(auto_now_add=True, verbose_name="Дата записи")
     comment = models.TextField(null=True, blank=True, verbose_name="Комментарий")

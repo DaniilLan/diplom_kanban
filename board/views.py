@@ -27,7 +27,19 @@ def home(request):
             'timeEstimateMinutes': time_estimate_formatted  # Используем отформатированное время
         }
         all_tasks.append(t_dict)
-    return render(request, 'index.html', {'tasks': all_tasks})
+
+    all_timelogs = []
+    t_timelogs = request.user.timelogs.all()
+    for tl in t_timelogs:
+        t_dict = {
+            "task": str(tl.task.uuid),
+            "minutesSpent": tl.minutesSpent,
+            "date": tl.date.isoformat(),
+            "comment": tl.comment,
+            "owner_username": tl.owner.username
+        }
+        all_timelogs.append(t_dict)
+    return render(request, 'index.html', {'tasks': all_tasks, 'timelogs': all_timelogs})
 
 def register_request(request):
     if request.method == 'POST':
