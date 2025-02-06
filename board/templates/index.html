@@ -127,7 +127,10 @@
                                       </div>
                                   </div>
                                   <div x-text="t.name" class="text-gray-300"></div>
-                                  <div x-text="t.date" class="text-gray-500 text-xs mt-2"></div>
+                                    <div x-text="t.date" class="text-gray-500 text-xs mt-2"></div>
+                                    <div class="text-gray-500 text-xs">
+                                        <span x-text="t.totalMinutesSpent"></span>/<span x-text="t.timeEstimateMinutes"></span>
+                                    </div>
                                   <div class="text-right">
                                     <a class="uil uil-edit mr-1" @click.prevent="showModalEdit(board, t.uuid, t.name, t.description, t.typeTask, t.priorityTask, t.timeEstimateMinutes)" href="#" class="inline-flex items-center text-sm font-medium" :class="`text-${colorSelected.value}-500 hover:text-${colorSelected.value}-600`">
                                     </a>
@@ -535,36 +538,53 @@ function board() {
         },
 
         getData() {
-          const themeFromLocalStorage = JSON.parse(localStorage.getItem('KB-theme'));
-          this.bannerImage = localStorage.getItem('KB-bannerImage') || '';
-          this.colorSelected = themeFromLocalStorage || {
-            label: '#3182ce',
-            value: 'blue'
-          };
-           const tasksFromDjango = {{ tasks | safe }};
-           this.tasks = tasksFromDjango.map(t => {
-              return {
-                uuid: t.uuid,
-                name: t.name,
-                task_id: t.task_id,
-                boardName: t.boardName,
-                description: t.description,
-                date: t.date,
-                edit: false,
-                typeTask: t.typeTask,
-                priorityTask: t.priorityTask,
-                timeEstimateMinutes: t.timeEstimateMinutes,
-              }});
+            const themeFromLocalStorage = JSON.parse(localStorage.getItem('KB-theme'));
+            this.bannerImage = localStorage.getItem('KB-bannerImage') || '';
+            this.colorSelected = themeFromLocalStorage || {
+                label: '#3182ce',
+                value: 'blue'
+            };
+            const tasksFromDjango = {{ tasks | safe }};
+            const timelogsFromDjango = {{ timelogs | safe }};
 
-           const timelogsFromDjango = {{ timelogs | safe }};
-           this.timelogs = timelogsFromDjango.map(tl => {
-              return {
-                task: tl.task,
-                minutesSpent: tl.minutesSpent,
-                date: tl.date,
-                comment: tl.comment,
-                owner: tl.owner
-              }});
+            // Добавляем расчет затраченного времени для каждой задачи
+            this.tasks = tasksFromDjango.map(t => {
+                const taskTimelogs = timelogsFromDjango.filter(tl => tl.task === t.uuid);
+                const totalMinutesSpent = taskTimelogs.reduce((acc, tl) => acc + tl.minutesSpent, 0);
+                function convertMinutesToTime(minutes) {
+                    const days = Math.floor(minutes / 1440); // 1440 минут в дне
+                    const hours = Math.floor((minutes % 1440) / 60); // Остаток минут делим на 60 чтобы получить часы
+                    const mins = minutes % 60; // Остаток минут
+
+                    let result = '';
+                    if (days > 0) {
+                        result += `${days}д `;
+                    }
+                    if (hours > 0) {
+                        result += `${hours}ч `;
+                    }
+                    if (mins > 0) {
+                        result += `${mins}м`;
+                    }
+
+                    // Убираем возможный пробел в конце строки
+                    return result.trim();
+                }
+                const timeSpent = convertMinutesToTime(totalMinutesSpent);
+                   return {
+                    uuid: t.uuid,
+                    name: t.name,
+                    task_id: t.task_id,
+                    boardName: t.boardName,
+                    description: t.description,
+                    date: t.date,
+                    edit: false,
+                    typeTask: t.typeTask,
+                    priorityTask: t.priorityTask,
+                    timeEstimateMinutes: t.timeEstimateMinutes,
+                    totalMinutesSpent: timeSpent,
+                };
+            });
         },
 
         saveSettings() {
