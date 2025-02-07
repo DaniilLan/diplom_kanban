@@ -17,7 +17,7 @@ def format_minutes_to_time(minutes):
         time_parts.append(f"{hours}ч")
     if mins > 0:
         time_parts.append(f"{mins}м")
-    return " ".join(time_parts) if time_parts else "0м"
+    return " ".join(time_parts) if time_parts else "?д ?ч ?м"
 
 
 class BoardNames(models.TextChoices):

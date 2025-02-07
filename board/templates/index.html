@@ -128,14 +128,19 @@
                                   </div>
                                   <div x-text="t.name" class="text-gray-300"></div>
                                     <div x-text="t.date" class="text-gray-500 text-xs mt-2"></div>
-                                    <div class="text-gray-500 text-xs">
-                                        <span x-text="t.totalMinutesSpent"></span>/<span x-text="t.timeEstimateMinutes"></span>
+                                    <div class="item-center flex justify-between">
+                                        <div class="text-left">
+                                            <span x-text="t.totalMinutesSpent" class="text-gray-500 text-xs"></span>
+                                            <span class="text-gray-500 text-xs">/</span>
+                                            <span x-text="t.timeEstimateMinutes" class="text-gray-500 text-xs"></span>
+                                        </div>
+                                        <div class="text-right">
+                                            <a class="uil uil-edit mr-1" @click.prevent="showModalEdit(board, t.uuid, t.name, t.description, t.typeTask, t.priorityTask, t.timeEstimateMinutes)" href="#" class="inline-flex items-center text-sm font-medium" :class="`text-${colorSelected.value}-500 hover:text-${colorSelected.value}-600`">
+                                            </a>
+                                            <a class="uil bx bxs-trash mr-1" @click="removeTask(t.uuid)" href="#" class="inline-flex items-center text-sm font-medium" :class="'text-red-500 hover:text-red-600'">
+                                            </a>
+                                        </div>
                                     </div>
-                                  <div class="text-right">
-                                    <a class="uil uil-edit mr-1" @click.prevent="showModalEdit(board, t.uuid, t.name, t.description, t.typeTask, t.priorityTask, t.timeEstimateMinutes)" href="#" class="inline-flex items-center text-sm font-medium" :class="`text-${colorSelected.value}-500 hover:text-${colorSelected.value}-600`">
-                                    </a>
-                                    <a class="uil bx bxs-trash mr-1" @click="removeTask(t.uuid)" href="#" class="inline-flex items-center text-sm font-medium" :class="'text-red-500 hover:text-red-600'">
-                                    </a>
                                   </div>
                                 </div>
                               </div>
@@ -565,6 +570,9 @@ function board() {
                     }
                     if (mins > 0) {
                         result += `${mins}м`;
+                    }
+                    else {
+                        result = '?д ?ч ?м';
                     }
 
                     // Убираем возможный пробел в конце строки
