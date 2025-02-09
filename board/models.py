@@ -2,24 +2,6 @@ import uuid
 from django.db import models
 from django.db.models import Max
 
-
-def format_minutes_to_time(minutes):
-    """
-    Преобразует минуты в строку формата "Xд Yч Zм".
-    """
-    days = minutes // (24 * 60)
-    hours = (minutes % (24 * 60)) // 60
-    mins = minutes % 60
-    time_parts = []
-    if days > 0:
-        time_parts.append(f"{days}д")
-    if hours > 0:
-        time_parts.append(f"{hours}ч")
-    if mins > 0:
-        time_parts.append(f"{mins}м")
-    return " ".join(time_parts) if time_parts else "?д ?ч ?м"
-
-
 class BoardNames(models.TextChoices):
     ToDo = 'Сделать'
     InProgress = 'В процессе'

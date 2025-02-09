@@ -1,7 +1,6 @@
 from board.models import Task, TimeLog
 from django.contrib.auth.models import User
 from rest_framework import serializers
-from rest_framework.exceptions import ValidationError
 
 
 class TaskSerializer(serializers.ModelSerializer):
@@ -21,17 +20,23 @@ class TaskSerializer(serializers.ModelSerializer):
                   'timeEstimateMinutes',
                   )
 
+
 class TimeLogSerializer(serializers.ModelSerializer):
     owner_username = serializers.CharField(source='owner.username', read_only=True)
+    uuid = serializers.UUIDField(source='id', read_only=True)  # Добавьте это поле
+    date = serializers.DateTimeField(format="%d.%m.%Y %H:%M")  # Форматирование даты
 
     class Meta:
         model = TimeLog
-        fields = ('task',
-                  'minutesSpent',
-                  'date',
-                  'comment',
-                  'owner'
-                  )
+        fields = (
+            'uuid',  # Добавьте это
+            'task',
+            'minutesSpent',
+            'date',
+            'comment',
+            'owner',
+            'owner_username'  # Добавьте это поле
+        )
 
 class UserSerializer(serializers.ModelSerializer):
     tasks = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
@@ -39,3 +44,5 @@ class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ['id', 'username', 'tasks']
+
+

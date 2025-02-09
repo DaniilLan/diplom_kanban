@@ -18,3 +18,28 @@ function parseTimeInput(timeInput) {
 
   return totalMinutes;
 }
+
+function convertMinutesToTime(minutes) {
+    const days = Math.floor(minutes / 1440);
+    const hours = Math.floor((minutes % 1440) / 60);
+    const mins = minutes % 60;
+
+    let result = '';
+    if (days > 0) {
+        result += `${days}д `;
+    }
+    if (hours > 0) {
+        result += `${hours}ч `;
+    }
+    if (mins > 0) {
+        result += `${mins}м`;
+    }
+
+    // Если результат пустой (например, minutes = 0), возвращаем '0м'
+    if (result === '') {
+        result = '0м';
+    }
+
+    // Убираем возможный пробел в конце строки
+    return result.trim();
+}

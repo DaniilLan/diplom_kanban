@@ -36,6 +36,14 @@ class TimeLogList(generics.ListCreateAPIView):
     def perform_create(self, serializer):
         serializer.save(owner=self.request.user)
 
+class TimeLogByTask(APIView):
+    authentication_classes = [SessionAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, task_uuid):
+        timelogs = TimeLog.objects.filter(task=task_uuid, owner=request.user)
+        serializer = TimeLogSerializer(timelogs, many=True)
+        return Response(serializer.data)
 
 class DetailTask(generics.RetrieveUpdateDestroyAPIView):
     queryset = Task.objects.all()
