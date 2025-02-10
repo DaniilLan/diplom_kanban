@@ -35,11 +35,8 @@ function convertMinutesToTime(minutes) {
         result += `${mins}м`;
     }
 
-    // Если результат пустой (например, minutes = 0), возвращаем '0м'
     if (result === '') {
         result = '0м';
     }
-
-    // Убираем возможный пробел в конце строки
     return result.trim();
 }

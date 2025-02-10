@@ -246,7 +246,7 @@
                 type="text"
                 x-model="timeEstimateMinutes"
                 class="bg-gray-900 appearance-none border-2 border-gray-600 rounded-lg w-full py-2 px-4 text-gray-300 leading-tight focus:outline-none focus:bg-gray-900 focus:border-blue-500"
-                placeholder="1д 1ч 1м"
+                placeholder="0д 0ч 0м"
               />
             </div>
 
@@ -349,12 +349,12 @@
                         />
                     </div>
 
-                    <div class="mb-4">
+                    <div class="mb-4" x-data="{ totalMinutesSpent: totalMinutesSpent }">
                         <label class="text-gray-300 block mb-1 font-bold text-sm">Затраченное время</label>
                         <select x-model="selectedTimeLog" @change="onTimeLogSelect" class="bg-gray-900 appearance-none border-2 border-gray-600 rounded-lg w-full py-2 px-4 text-gray-300 leading-tight focus:outline-none focus:bg-gray-900 focus:border-blue-500">
-                            <option value="">Выберите запись</option>
+                            <option value="" x-text="`${convertMinutesToTime(totalMinutesSpent)} - за все время`"></option>
                             <template x-for="log in taskTimeLogs" :key="log.uuid">
-                                <option :value="log.uuid" x-text="`${log.minutesSpent} минут - ${log.date}`"></option>
+                                <option :value="log.uuid" x-text="`${convertMinutesToTime(log.minutesSpent)} - ${log.date}`"></option>
                             </template>
                         </select>
                     </div>
@@ -526,11 +526,14 @@ function board() {
         },
 
         loadTimeLogs(taskUuid) {
-            console.log('Загрузка TimeLogs для задачи:', taskUuid);  // Добавьте это
+            console.log('Загрузка TimeLogs для задачи:', taskUuid);
             api_client.get(`/timelogs/task/${taskUuid}/`)
                 .then(response => {
-                    console.log('Получены TimeLogs:', response.data);  // Добавьте это
+                    console.log('Получены TimeLogs:', response.data);
                     this.taskTimeLogs = response.data;
+
+                    // Вычисляем общее количество минут
+                    this.totalMinutesSpent = this.taskTimeLogs.reduce((total, log) => total + log.minutesSpent, 0);
                 })
                 .catch(error => {
                     console.error('Ошибка при загрузке TimeLogs:', error);
@@ -538,12 +541,17 @@ function board() {
         },
 
         onTimeLogSelect() {
-            const selectedLog = this.taskTimeLogs.find(log => log.uuid === this.selectedTimeLog);
-            if (selectedLog) {
-                this.selectedTimeLogDate = selectedLog.date;
-                this.selectedTimeLogComment = selectedLog.comment;
-            }
-        },
+                // Если выбрана заглушка, очищаем комментарий
+                if (this.selectedTimeLog === '') {
+                    this.selectedTimeLogComment = '';
+                } else {
+                    // Иначе можно выполнить другие действия, например, загрузить комментарий
+                    const selectedLog = this.taskTimeLogs.find(log => log.uuid === this.selectedTimeLog);
+                    if (selectedLog) {
+                        this.selectedTimeLogComment = selectedLog.comment || '';
+                    }
+                }
+            },
 
         resetForm() {
             this.task = {

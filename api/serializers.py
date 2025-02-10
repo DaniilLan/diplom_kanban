@@ -23,19 +23,19 @@ class TaskSerializer(serializers.ModelSerializer):
 
 class TimeLogSerializer(serializers.ModelSerializer):
     owner_username = serializers.CharField(source='owner.username', read_only=True)
-    uuid = serializers.UUIDField(source='id', read_only=True)  # Добавьте это поле
-    date = serializers.DateTimeField(format="%d.%m.%Y %H:%M")  # Форматирование даты
+    uuid = serializers.UUIDField(source='id', read_only=True)
+    date = serializers.DateTimeField(format="%d.%m.%Y %H:%M")
 
     class Meta:
         model = TimeLog
         fields = (
-            'uuid',  # Добавьте это
+            'uuid',
             'task',
             'minutesSpent',
             'date',
             'comment',
             'owner',
-            'owner_username'  # Добавьте это поле
+            'owner_username'
         )
 
 class UserSerializer(serializers.ModelSerializer):
