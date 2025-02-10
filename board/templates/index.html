@@ -175,8 +175,8 @@
         </div>
 
         <div class="w-full rounded-t-lg md:rounded-lg flex">
-          <!-- Левая часть (60%) -->
-          <div class="bg-gray-900 p-8 border-r-2 border-gray-700" style="width: 60%; ">
+          <!-- Левая часть (65%) -->
+          <div class="bg-gray-900 p-8 border-r-2 border-gray-700" style="width: 65%; ">
             <h2 class="font-bold text-2xl mb-6 text-gray-300">Новая задача для <span class="leading-normal border-b-2" :class="`text-${colorSelected.value}-600 border-${colorSelected.value}-200`" x-text="task.boardName"></span></h2>
 
             <div class="mb-4">
@@ -209,8 +209,8 @@
             </div>
           </div>
 
-          <!-- Правая часть (40%) -->
-          <div class="bg-gray-800 p-8"  style="width: 40%;">
+          <!-- Правая часть (35%) -->
+          <div class="bg-gray-800 p-8"  style="width: 35%;">
             <div class="mb-4">
               <label class="text-gray-300 block mb-1 font-bold text-sm">Тип</label>
               <select x-model="typeTask" class="bg-gray-900 appearance-none border-2 border-gray-600 rounded-lg w-full py-2 px-4 text-gray-300 leading-tight focus:outline-none focus:bg-gray-900 focus:border-blue-500">
@@ -274,8 +274,8 @@
             </div>
 
             <div class="w-full rounded-t-lg md:rounded-lg flex">
-                <!-- Левая часть (60%) с разделителем -->
-                <div class="bg-gray-900 p-8 border-r-2 border-gray-700 relative" style="width: 60%;">
+                <!-- Левая часть (65%) с разделителем -->
+                <div class="bg-gray-900 p-8 border-r-2 border-gray-700 relative" style="width: 65%;">
                     <h2 class="font-bold text-2xl mb-6 text-gray-300">Задача из <span class="leading-normal border-b-2" :class="`text-${colorSelected.value}-600 border-${colorSelected.value}-200`" x-text="task.boardName"></span></h2>
 
                     <div class="mb-4">
@@ -308,8 +308,8 @@
                     </div>
                 </div>
 
-                <!-- Правая часть (40%) -->
-                <div class="bg-gray-800 p-8" style="width: 40%;">
+                <!-- Правая часть (35%) -->
+                <div class="bg-gray-800 p-8" style="width: 35%;">
                     <div class="mb-4">
                         <label class="text-gray-300 block mb-1 font-bold text-sm">Тип</label>
                         <select x-model="task.typeTask" class="bg-gray-900 appearance-none border-2 border-gray-600 rounded-lg w-full py-2 px-4 text-gray-300 leading-tight focus:outline-none focus:bg-gray-900 focus:border-blue-500">
@@ -367,6 +367,7 @@
                             rows="3"
                             placeholder="Комментарий..."
                             readonly
+                            style="height: 185px;"
                         ></textarea>
                     </div>
                 </div>
