@@ -332,7 +332,6 @@
               <label class="text-gray-300 block mb-1 font-bold text-sm">Затраченное время</label>
               <input
                 type="text"
-                x-model="selectedTimeLog"
                 class="bg-gray-800 appearance-none border-2 border-gray-600 rounded-lg w-full py-2 px-4 text-gray-300 leading-tight"
                 placeholder="0д 0ч 0м"
                 readonly
@@ -495,8 +494,16 @@
                         />
                     </div>
 
+                    <hr class="border-gray-600 my-4">
+
                     <div class="mb-4" x-data="{ isOpen: false, tempSelectedTimeLog: '' }">
                         <label class="text-gray-300 block mb-1 font-bold text-sm">Затраченное время</label>
+
+                        <!-- Опция "+ Новая запись" -->
+                        <div>
+                            <span x-text="+ Новая запись"></span>
+                        </div>
+
                         <div class="relative">
                             <!-- Кнопка-триггер -->
                             <button
@@ -534,6 +541,7 @@
                                         <span x-text="`${convertMinutesToTime(log.minutesSpent)} - ${log.date}`"></span>
                                     </div>
                                 </template>
+
                             </div>
                         </div>
                     </div>
@@ -546,9 +554,19 @@
                             rows="3"
                             placeholder="Комментарий..."
                             readonly
-                            style="height: 201px;"
+                            style="height: 184px;"
                         ></textarea>
                     </div>
+
+                    <div class="mt-8 text-right">
+                        <button type="button" class="text-white font-semibold py-2 px-4 border border-transparent focus:outline-none rounded-lg shadow-sm bg-gray-800 hover:bg-gray-700"
+                                @click="updateTask(task.uuid, task.name, task.description, task.typeTask, task.priorityTask, task.timeEstimateMinutes)"
+                                style="border: 2px solid #718096;"
+                        >
+                            Добавить затраченное время
+                        </button>
+                    </div>
+
                 </div>
             </div>
         </div>
@@ -704,7 +722,7 @@ function board() {
           this.task.description = description;
           this.task.typeTask = typeTask;
           this.task.priorityTask = priorityTask;
-          this.task.timeEstimateMinutes = '';
+          this.task.timeEstimateMinutes = timeEstimateMinutes;
           this.selectedTimeLog = '';
           this.selectedTimeLogComment = '';
           this.openModalEdit = true;
