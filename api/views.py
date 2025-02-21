@@ -1,10 +1,11 @@
+from django.shortcuts import get_object_or_404
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from api.serializers import TaskSerializer, TimeLogSerializer
 from board.models import Task, TimeLog
 from board.models import DeletedTask
-from rest_framework import generics
+from rest_framework import generics, status
 from rest_framework.authentication import SessionAuthentication
 from rest_framework.permissions import IsAuthenticated
 
@@ -44,6 +45,19 @@ class TimeLogByTask(APIView):
         timelogs = TimeLog.objects.filter(task=task_uuid, owner=request.user)
         serializer = TimeLogSerializer(timelogs, many=True)
         return Response(serializer.data)
+
+class TimeLogCreate(generics.CreateAPIView):
+    serializer_class = TimeLogSerializer
+    authentication_classes = [SessionAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def perform_create(self, serializer):
+        task = get_object_or_404(
+            Task,
+            uuid=self.kwargs['task_uuid'],
+            owner=self.request.user
+        )
+        serializer.save(owner=self.request.user, task=task)
 
 class DetailTask(generics.RetrieveUpdateDestroyAPIView):
     queryset = Task.objects.all()

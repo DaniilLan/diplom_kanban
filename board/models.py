@@ -69,6 +69,12 @@ class Task(models.Model):
         return f"{self.name} (T-{self.task_id})"
 
 class TimeLog(models.Model):
+    uuid = models.UUIDField(  # Добавить это поле
+        primary_key=True,
+        default=uuid.uuid4,
+        editable=False,
+        unique=True
+    )
     task = models.ForeignKey(Task, on_delete=models.CASCADE)
     owner = models.ForeignKey('auth.User', on_delete=models.CASCADE, related_name='timelogs')
     minutesSpent = models.PositiveIntegerField(verbose_name="Затраченное время (в минутах)")
