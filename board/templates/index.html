@@ -175,8 +175,8 @@
     <!-- конец футера -->
 
     <!-- Добавление задачи -->
-    <div class="fixed inset-0 flex h-screen w-full items-end md:items-center justify-center z-10" x-show.transition.opacity="openModalAdd">
-      <div class="absolute inset-0 bg-white opacity-25"></div>
+    <div class="fixed inset-0 flex h-screen w-full items-end md:items-center justify-center z-10" x-show.transition.opacity="openModalAdd" x-clock x-init="$watch('openModalAdd', val => $store.modals.toggleBodyScroll(val))">
+      <div class="absolute inset-0 bg-white opacity-25" @click.self="openModalAdd = false"></div>
 
       <div class="md:p-4 mx-auto w-full flex-1 relative overflow-hidden" style="max-width: 85rem;">
         <div class="md:shadow absolute right-0 top-0 w-10 h-10 rounded-full bg-white text-gray-600 hover:text-gray-900 inline-flex items-center justify-center cursor-pointer" x-on:click="openModalAdd = !openModalAdd">
@@ -184,27 +184,27 @@
         </div>
 
         <div class="w-full rounded-t-lg md:rounded-lg flex">
-          <!-- Левая часть (60%) -->
-          <div class="bg-gray-900 p-8 border-r-2 border-gray-700" style="width: 60%; ">
+          <!-- Левая часть (65%) -->
+          <div class="bg-gray-900 p-8 border-r-2 border-gray-700" style="width: 65%; ">
             <h2 class="font-bold text-2xl mb-6 text-gray-300">Новая задача для <span class="leading-normal border-b-2" :class="`text-${colorSelected.value}-600 border-${colorSelected.value}-200`" x-text="task.boardName"></span></h2>
 
             <div class="mb-4">
               <label class="text-gray-300 block mb-1 font-bold text-lg">Заголовок</label>
               <textarea
-                class="bg-gray-900 appearance-none border-2 border-gray-600 rounded-lg w-full py-2 px-4 text-gray-300 leading-tight focus:outline-none focus:bg-gray-900 focus:border-blue-500"
+                class="bg-gray-900 appearance-none border-2 border-gray-600 rounded-lg w-full py-2 px-4 text-gray-300 leading-tight focus:outline-none focus:bg-gray-900 focus:border-blue-500 custom-scroll resize-none"
                 type="text"
                 rows="2"
                 x-model="name"
-                style="font-size: 1.25rem;">
+                style="font-size: 1.25rem; overflow-y: auto;">
               </textarea>
               <hr class="border-gray-600 my-4">
               <label class="text-gray-300 block mb-1 font-bold text-lg">Описание</label>
               <textarea
-                class="bg-gray-900 appearance-none border-2 border-gray-600 rounded-lg w-full py-2 px-4 text-gray-300 leading-tight focus:outline-none focus:bg-gray-900 focus:border-blue-500"
+                class="bg-gray-900 appearance-none border-2 border-gray-600 rounded-lg w-full py-2 px-4 text-gray-300 leading-tight focus:outline-none focus:bg-gray-900 focus:border-blue-500 custom-scroll resize-none"
                 type="text"
                 rows="4"
                 x-model="description"
-                style="height: 25rem; line-height: 1.6;">
+                style="height: 25rem; line-height: 1.6; overflow-y: auto;">
               </textarea>
             </div>
 
@@ -218,8 +218,8 @@
             </div>
           </div>
 
-          <!-- Правая часть (40%) -->
-          <div class="bg-gray-800 p-8"  style="width: 40%;">
+          <!-- Правая часть (35%) -->
+          <div class="bg-gray-800 p-8"  style="width: 35%;">
 
             <div class="mb-4">
                 <label class="text-gray-300 block mb-1 font-bold text-sm">Тип</label>
@@ -342,11 +342,11 @@
                 <label class="text-gray-300 block mb-1 font-bold text-sm">Комментарий</label>
                 <textarea
                     x-model="selectedTimeLogComment"
-                    class="bg-gray-800 appearance-none border-2 border-gray-600 rounded-lg w-full py-2 px-4 text-gray-300 leading-tight"
+                    class="bg-gray-800 appearance-none border-2 border-gray-600 rounded-lg w-full py-2 px-4 text-gray-300 leading-tight custom-scroll resize-none"
                     rows="3"
                     placeholder="Комментарий..."
                     readonly
-                    style="height: 184px;"
+                    style="height: 184px; overflow-y: auto;"
                 ></textarea>
             </div>
 
@@ -356,35 +356,36 @@
     </div>
 
         <!-- Изменение задачи -->
-        <div class="fixed inset-0 flex h-screen w-full items-end md:items-center justify-center z-10" x-show="t.edit == true" x-show.transition.opacity="openModalEdit">
-            <div class="absolute inset-0 bg-white opacity-25"></div>
+        <div class="fixed inset-0 flex h-screen w-full items-end md:items-center justify-center z-10" x-show="t.edit == true" x-show.transition.opacity="openModalEdit" x-cloak x-init="$watch('openModalEdit', val => $store.modals.toggleBodyScroll(val))">
+
+            <div class="absolute inset-0 bg-white opacity-25" @click.self="openModalEdit = false"></div>
             <div class="md:p-4 mx-auto w-full flex-1 relative overflow-hidden" style="max-width: 85rem;">
                 <div class="md:shadow absolute right-0 top-0 w-10 h-10 rounded-full bg-white text-gray-600 hover:text-gray-900 inline-flex items-center justify-center cursor-pointer" x-on:click="openModalEdit = !openModalEdit">
                     <i class="uil uil-times"></i>
                 </div>
 
                 <div class="w-full rounded-t-lg md:rounded-lg flex">
-                    <!-- Левая часть (60%) с разделителем -->
-                    <div class="bg-gray-900 p-8 border-r-2 border-gray-700 relative" style="width: 60%;">
+                    <!-- Левая часть (65%) с разделителем -->
+                    <div class="bg-gray-900 p-8 border-r-2 border-gray-700 relative" style="width: 65%;">
                         <h2 class="font-bold text-2xl mb-6 text-gray-300">Задача из <span class="leading-normal border-b-2" :class="`text-${colorSelected.value}-600 border-${colorSelected.value}-200`" x-text="task.boardName"></span></h2>
 
                         <div class="mb-4">
                             <label class="text-gray-300 block mb-1 font-bold text-lg">Заголовок</label>
                             <textarea
-                                class="bg-gray-900 appearance-none border-2 border-gray-600 rounded-lg w-full py-2 px-4 text-gray-300 leading-tight focus:outline-none focus:bg-gray-900 focus:border-blue-500"
+                                class="bg-gray-900 appearance-none border-2 border-gray-600 rounded-lg w-full py-2 px-4 text-gray-300 leading-tight focus:outline-none focus:bg-gray-900 focus:border-blue-500 custom-scroll resize-none"
                                 type="text"
                                 rows="2"
                                 x-model="task.name"
-                                style="font-size: 1.25rem;">
+                                style="font-size: 1.25rem; overflow-y: auto;">
                             </textarea>
                             <hr class="border-gray-600 my-4">
                             <label class="text-gray-300 block mb-1 font-bold text-lg">Описание</label>
                             <textarea
-                                class="bg-gray-900 appearance-none border-2 border-gray-600 rounded-lg w-full py-2 px-4 text-gray-300 leading-tight focus:outline-none focus:bg-gray-900 focus:border-blue-500"
+                                class="bg-gray-900 appearance-none border-2 border-gray-600 rounded-lg w-full py-2 px-4 text-gray-300 leading-tight focus:outline-none focus:bg-gray-900 focus:border-blue-500 custom-scroll resize-none"
                                 type="text"
                                 rows="4"
                                 x-model="task.description"
-                                style="height: 25rem; line-height: 1.6;">
+                                style="height: 25rem; line-height: 1.6; overflow-y: auto;">
                             </textarea>
                         </div>
 
@@ -398,8 +399,8 @@
                         </div>
                     </div>
 
-                    <!-- Правая часть (40%) -->
-                    <div class="bg-gray-800 p-8" style="width: 40%;">
+                    <!-- Правая часть (35%) -->
+                    <div class="bg-gray-800 p-8" style="width: 35%;">
                         <div class="mb-4">
                             <label class="text-gray-300 block mb-1 font-bold text-sm">Тип</label>
                             <div x-data="{ isOpen: false }" class="relative">
@@ -529,7 +530,8 @@
                                 <div
                                     x-show="isOpen"
                                     @click.outside="isOpen = false; tempSelectedTimeLog = ''"
-                                    class="absolute z-10 w-full mt-1 bg-gray-900 border-2 border-gray-600 rounded-lg overflow-hidden"
+                                    class="absolute z-10 w-full mt-1 bg-gray-900 border-2 border-gray-600 rounded-lg overflow-hidden custom-scroll"
+                                    style="max-height: 221px; overflow-y: auto;"
                                 >
                                     <!-- Опция "Все время" -->
                                     <div
@@ -559,11 +561,11 @@
                             <label class="text-gray-300 block mb-1 font-bold text-sm">Комментарий</label>
                             <textarea
                                 x-model="selectedTimeLogComment"
-                                class="bg-gray-900 appearance-none border-2 border-gray-600 rounded-lg w-full py-2 px-4 text-gray-300 leading-tight focus:outline-none focus:bg-gray-900 focus:border-blue-500"
+                                class="bg-gray-900 appearance-none border-2 border-gray-600 rounded-lg w-full py-2 px-4 text-gray-300 leading-tight focus:outline-none focus:bg-gray-900 focus:border-blue-500 custom-scroll resize-none"
                                 rows="3"
                                 placeholder="Комментарий..."
                                 readonly
-                                style="height: 184px;"
+                                style="height: 184px; overflow-y: auto;"
                             ></textarea>
                         </div>
 
@@ -582,8 +584,9 @@
 
         <div class="fixed inset-0 flex items-center justify-center z-20"
              x-show="openModalAddTime"
-             x-transition.opacity>
-            <div class="absolute inset-0 bg-black opacity-50"></div>
+             x-transition.opacity
+             x-clock>
+            <div class="absolute inset-0 bg-black opacity-50" @click.self="openModalAddTime = false"></div>
 
             <div class="bg-gray-800 rounded-lg p-6 w-full relative z-30" style="max-width: 30rem;">
                 <h3 class="text-2xl font-bold text-gray-300 mb-4">Добавление затраченного времени</h3>
@@ -600,10 +603,10 @@
                     <label class="text-gray-300 block mb-2 font-medium">Комментарий</label>
                     <textarea
                         x-model="newTimeLog.comment"
-                        class="bg-gray-900 border-2 border-gray-600 rounded-lg w-full px-4 py-2 text-gray-300 focus:border-blue-500 focus:outline-none"
+                        class="bg-gray-900 border-2 border-gray-600 rounded-lg w-full px-4 py-2 text-gray-300 focus:border-blue-500 focus:outline-none custom-scroll resize-none"
                         rows="3"
                         placeholder="Новый комментарий..."
-                        style="height: 150px;"></textarea>
+                        style="height: 150px; overflow-y: auto;"></textarea>
                 </div>
 
                 <div class="flex justify-end space-x-3">
@@ -678,6 +681,20 @@ const updateTask = async (taskUuid, taskName, taskDescription, typeTask, priorit
         console.error(e);
     }
 };
+
+document.addEventListener('alpine:init', () => {
+    Alpine.store('modals', {
+        activeModal: null,
+
+        toggleBodyScroll(isOpen) {
+            if(isOpen) {
+                document.body.classList.add('overflow-hidden', 'pr-[15px]');
+            } else {
+                document.body.classList.remove('overflow-hidden', 'pr-[15px]');
+            }
+        }
+    });
+});
 
 function board() {
       return {
