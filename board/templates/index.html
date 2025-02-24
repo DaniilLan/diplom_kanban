@@ -145,7 +145,7 @@
                                         <div class="text-right">
                                             <a class="uil uil-edit mr-1" @click.prevent="showModalEdit(board, t.uuid, t.name, t.description, t.typeTask, t.priorityTask, t.timeEstimateMinutes)" href="#" class="inline-flex items-center text-sm font-medium" :class="`text-${colorSelected.value}-500 hover:text-${colorSelected.value}-600`">
                                             </a>
-                                            <a class="uil bx bxs-trash mr-1" @click="removeTask(t.uuid)" href="#" class="inline-flex items-center text-sm font-medium" :class="'text-red-500 hover:text-red-600'">
+                                            <a class="uil bx bxs-trash mr-1" @click="openDeleteModal(t)" href="#" class="inline-flex items-center text-sm font-medium" :class="'text-red-500 hover:text-red-600'">
                                             </a>
                                         </div>
                                     </div>
@@ -159,6 +159,31 @@
                     </div>
                   </div>
                 </template>
+              </div>
+              <div x-show="showDeleteModal" class="fixed inset-0 bg-black bg-opacity-50  flex items-center justify-center p-4">
+                  <div class="bg-gray-800 rounded-lg p-6 w-full max-w-md">
+                    <h3 class="text-2xl font-bold text-gray-300 mb-4">
+                      <template x-if="selectedTaskForDeletion">
+                        <span>
+                          Удалить задачу
+                            <span x-text="selectedTaskForDeletion ? (selectedTaskForDeletion.typeTask === 'bug' ? 'BUG-' : 'TASK-') + selectedTaskForDeletion.task_id: ''" :class="`text-${colorSelected.value}-500`"></span>?
+                        </span>
+                      </template>
+                    </h3>
+                    <div class="mb-4">
+                      <h3 class="text-lg font-medium text-gray-300">Описание:</h3>
+                      <p x-text="selectedTaskForDeletion?.name" class="ml-2 text-gray-300 break-words"></p>
+                    </div>
+
+                    <div class="flex justify-end space-x-3">
+                        <button type="button" class="bg-white hover:bg-gray-400 text-gray-800 font-semibold focus:outline-none py-2 px-4 border border-gray-300 rounded-lg shadow-sm mr-2" @click="showDeleteModal = false">
+                            Отмена
+                        </button>
+                        <button type="button" class="text-white font-semibold py-2 px-4 border border-transparent focus:outline-none rounded-lg shadow-sm" @click="removeTask(selectedTaskForDeletion?.uuid)" :class="`bg-red-600 hover:bg-red-700`">
+                            Удалить
+                        </button>
+                    </div>
+                  </div>
               </div>
             </div>
             <!-- конец Канбан-доски -->
@@ -615,7 +640,7 @@
                         Отмена
                     </button>
                     <button @click="createTimeLog(task.uuid)"
-                            class="text-white font-semibold py-2 px-4 border border-transparent focus:outline-none rounded-lg shadow-sm bg-teal-700 hover:bg-teal-800">
+                            class="text-white font-semibold py-2 px-4 border border-transparent focus:outline-none rounded-lg shadow-sm" :class="`bg-${colorSelected.value}-700 hover:bg-${colorSelected.value}-800`">
                         Добавить
                     </button>
                 </div>
@@ -702,6 +727,8 @@ function board() {
         openModalAdd: false,
         openModalEdit: false,
         openModalAddTime: false,
+        showDeleteModal: false,
+        selectedTaskForDeletion: null,
         newTimeLog: { duration: '', comment: '' },
         bannerImage: '',
         colors: [{
@@ -827,6 +854,24 @@ function board() {
                 }
             } catch (e) {
                 console.error('Ошибка создания TimeLog:', e);
+            }
+        },
+
+        openDeleteModal(task) {
+            this.selectedTaskForDeletion = task;
+            this.showDeleteModal = true;
+        },
+
+        async removeTask(taskUuid) {
+            if (!taskUuid) return;
+
+            try {
+              const res = await api_client.delete(`/task/${taskUuid}`);
+              this.showDeleteModal = false;
+              location.reload();
+            } catch (e) {
+              console.error(e);
+              this.showDeleteModal = false;
             }
         },
 
