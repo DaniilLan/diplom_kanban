@@ -34,10 +34,37 @@ class DeletedTask(models.Model):
         verbose_name = 'Удаленная задача'
         verbose_name_plural = 'Удаленные задачи'
 
+class Group(models.Model):
+    uuid = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, unique=True)
+    owner = models.ForeignKey('auth.User', on_delete=models.CASCADE, related_name='owned_groups', verbose_name="Владелец группы")
+    name = models.CharField(max_length=255, verbose_name="Название группы")
+    date_created = models.DateTimeField(auto_now_add=True, verbose_name="Дата создания")
+
+    class Meta:
+        verbose_name = 'Группа досок'
+        verbose_name_plural = 'Группы досок'
+
+    def __str__(self):
+        return self.name
+
+class UsersGroup(models.Model):
+    uuid = models.UUIDField( primary_key=True, default=uuid.uuid4, editable=False, unique=True)
+    group = models.ForeignKey(Group, on_delete=models.CASCADE, related_name='members', verbose_name="Группа")
+    user = models.ForeignKey('auth.User', on_delete=models.CASCADE, related_name='group_memberships', verbose_name="Пользователь")
+    date_joined = models.DateTimeField(auto_now_add=True, verbose_name="Дата присоединения")
+
+    class Meta:
+        verbose_name = 'Участник группы'
+        verbose_name_plural = 'Участники групп'
+        unique_together = ('group', 'user')  # Один пользователь не может быть в группе дважды
+
+    def __str__(self):
+        return f"{self.user.username} в {self.group.name}"
+
 
 class Task(models.Model):
-
     owner = models.ForeignKey('auth.User', on_delete=models.CASCADE, related_name='tasks')
+    group = models.ForeignKey(Group, on_delete=models.SET_NULL, null=True, blank=True, related_name='tasks', verbose_name="Группа")
     uuid = models.UUIDField(default=uuid.uuid4, unique=True, primary_key=True, editable=False)
     task_id = models.PositiveIntegerField(unique=True, null=True, blank=True)
     name = models.CharField(max_length=500)

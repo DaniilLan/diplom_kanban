@@ -4,13 +4,20 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import AuthenticationForm
 from django.shortcuts import redirect, render
 from django.utils.formats import localize
+from django.db.models import Q
 from .forms import NewUserForm
+from .models import Group, Task
+
 
 @login_required
 def home(request):
+    user_groups = Group.objects.filter(members__user=request.user)
+    tasks = Task.objects.filter(
+        Q(owner=request.user) |
+        Q(group__in=user_groups)
+    ).distinct()
     all_tasks = []
-    t_list = request.user.tasks.all()
-    for t in t_list:
+    for t in tasks:
         t_dict = {
             'uuid': str(t.uuid),
             'name': t.name if t.name is not None else 'Без названия',
@@ -20,7 +27,8 @@ def home(request):
             'description': str(t.description),
             'typeTask': str(t.typeTask),
             'priorityTask': str(t.priorityTask),
-            'timeEstimateMinutes': str(t.timeEstimateMinutes)
+            'timeEstimateMinutes': str(t.timeEstimateMinutes),
+            'group': t.group.name if t.group else 'Личные задачи',
         }
         all_tasks.append(t_dict)
 

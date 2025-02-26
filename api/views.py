@@ -1,27 +1,38 @@
 from django.shortcuts import get_object_or_404
+from rest_framework.exceptions import PermissionDenied
 from rest_framework.response import Response
 from rest_framework.views import APIView
-
-from api.serializers import TaskSerializer, TimeLogSerializer
-from board.models import Task, TimeLog
+from api.serializers import TaskSerializer, TimeLogSerializer, GroupSerializer
+from board.models import Task, TimeLog, Group
 from board.models import DeletedTask
 from rest_framework import generics, status
 from rest_framework.authentication import SessionAuthentication
 from rest_framework.permissions import IsAuthenticated
-
+from django.db.models import Q
 
 class ListTask(generics.ListCreateAPIView):
-    queryset = Task.objects.all()
     serializer_class = TaskSerializer
     authentication_classes = [SessionAuthentication]
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
         user = self.request.user
-        return Task.objects.filter(owner=user)
+        return Task.objects.filter(
+            Q(owner=user) |
+            Q(group__members__user=user)
+        ).distinct()
 
     def perform_create(self, serializer):
-        serializer.save(owner=self.request.user)
+        # Получаем первую группу, где пользователь является участником или владельцем
+        user_group = Group.objects.filter(
+            Q(members__user=self.request.user) |
+            Q(owner=self.request.user)
+        ).first()
+
+        serializer.save(
+            owner=self.request.user,
+            group=user_group  # Автоматически устанавливаем группу
+        )
 
 class TimeLogList(generics.ListCreateAPIView):
     queryset = TimeLog.objects.all()
@@ -81,3 +92,35 @@ class DetailTask(generics.RetrieveUpdateDestroyAPIView):
         )
         # Удаление оригинальной задачи
         instance.delete()
+
+    def get_queryset(self):
+        user = self.request.user
+        return Task.objects.filter(
+            Q(owner=user) |
+            Q(group__members__user=user)
+        ).distinct()
+
+class GroupList(generics.ListCreateAPIView):
+    serializer_class = GroupSerializer
+    authentication_classes = [SessionAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return Group.objects.filter(
+            Q(owner=self.request.user) |
+            Q(members__user=self.request.user)
+        ).distinct()
+
+    def perform_create(self, serializer):
+        serializer.save(owner=self.request.user)
+
+class GroupDetail(generics.RetrieveUpdateDestroyAPIView):
+    serializer_class = GroupSerializer
+    authentication_classes = [SessionAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return Group.objects.filter(
+            Q(owner=self.request.user) |
+            Q(members__user=self.request.user)
+        ).distinct()
