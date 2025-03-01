@@ -738,6 +738,7 @@ function board() {
         openModalAddTime: false,
         showDeleteModal: false,
         selectedTaskForDeletion: null,
+        groupUUID: '{{ group.uuid }}',
         newTimeLog: { duration: '', comment: '' },
         bannerImage: '',
         selectedOwner: '{{ request.user.username }}',
@@ -815,21 +816,16 @@ function board() {
           this.typeTask = '';
           this.priorityTask = '';
           this.timeEstimateMinutes = '';
-          this.task.boardName = '{{ request.user.username }}';
+          this.task.boardName = board;
           this.openModalAdd = true;
           this.selectedOwner = '{{ request.user.username }}';
-          setTimeout(() => this.$refs.taskName.focus(), 200);
 
-          const currentTask = this.tasks.find(t => t.boardName === board);
-          if (currentTask) {
-            const groupUUID = currentTask.group_uuid;
-            fetch(`/api/groups/${groupUUID}/`)
-              .then(response => response.json())
-              .then(data => {
-                this.groupMembers = data.members;
-              })
-              .catch(error => console.error('Ошибка загрузки участников:', error));
-          }
+          fetch(`/api/groups/${this.groupUUID}`)
+            .then(response => response.json())
+            .then(data => {
+              const groupData = Array.isArray(data) ? data[0] : data;
+              this.groupMembers = groupData.members;
+            })
 
           setTimeout(() => this.$refs.taskName.focus(), 200);
         },
