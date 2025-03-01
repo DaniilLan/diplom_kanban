@@ -342,7 +342,8 @@
                 <div
                   x-show="isOpen"
                   @click.outside="isOpen = false"
-                  class="absolute z-10 w-full mt-1 bg-gray-900 border-2 border-gray-600 rounded-lg overflow-hidden"
+                  class="absolute z-10 w-full mt-1 bg-gray-900 border-2 border-gray-600 rounded-lg overflow-hidden custom-scroll"
+                  style="max-height: 164px; overflow-y: auto;"
                 >
                   <template x-for="user in groupMembers" :key="user">
                     <div
@@ -814,7 +815,7 @@ function board() {
           this.typeTask = '';
           this.priorityTask = '';
           this.timeEstimateMinutes = '';
-          this.task.boardName = board;
+          this.task.boardName = '{{ request.user.username }}';
           this.openModalAdd = true;
           this.selectedOwner = '{{ request.user.username }}';
           setTimeout(() => this.$refs.taskName.focus(), 200);
