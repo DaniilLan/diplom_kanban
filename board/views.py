@@ -30,6 +30,7 @@ def home(request):
             'timeEstimateMinutes': str(t.timeEstimateMinutes),
             'group': t.group.name,
             'group_uuid': str(t.group.uuid),
+            'responsible': str(t.responsible),
         }
         all_tasks.append(t_dict)
 
