@@ -9,6 +9,6 @@ urlpatterns = [
     path('timelogs/', TimeLogList.as_view(), name='timelogs'),
     path('timelogs/task/<str:task_uuid>/', TimeLogByTask.as_view(), name='timelogs-by-task'),
     path('tasks/<uuid:task_uuid>/timelogs/', TimeLogCreate.as_view(), name='timelog-create'),
-    path('api/groups/', GroupList.as_view(), name='group-list'),
-    path('api/groups/<uuid:pk>/', GroupDetail.as_view(), name='group-detail'),
+    path('groups/', GroupList.as_view(), name='group-list'),
+    path('groups/<uuid:pk>/', GroupDetail.as_view(), name='group-detail'),
 ]

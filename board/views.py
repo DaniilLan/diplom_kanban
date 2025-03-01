@@ -28,7 +28,8 @@ def home(request):
             'typeTask': str(t.typeTask),
             'priorityTask': str(t.priorityTask),
             'timeEstimateMinutes': str(t.timeEstimateMinutes),
-            'group': t.group.name if t.group else 'Личные задачи',
+            'group': t.group.name,
+            'group_uuid': str(t.group.uuid),
         }
         all_tasks.append(t_dict)
 

@@ -49,8 +49,9 @@ class GroupSerializer(serializers.ModelSerializer):
 class TaskSerializer(serializers.ModelSerializer):
     owner = serializers.ReadOnlyField(source='owner.username')
     group = GroupSerializer(read_only=True)
+    responsible = serializers.SlugRelatedField(slug_field='username',queryset=User.objects.all(),required=False,allow_null=True)
 
     class Meta:
         model = Task
         fields = ('uuid', 'task_id', 'name', 'boardName', 'date', 'owner',
-                 'description', 'typeTask', 'priorityTask', 'timeEstimateMinutes', 'group')
+                 'description', 'typeTask', 'priorityTask', 'timeEstimateMinutes', 'group', 'responsible')

@@ -234,7 +234,7 @@
               <button type="button" class="bg-white hover:bg-gray-400 text-gray-800 font-semibold focus:outline-none py-2 px-4 border border-gray-400 rounded-lg shadow-sm mr-2" @click="openModalAdd = !openModalAdd">
                 Отмена
               </button>
-              <button type="button" class="text-white font-semibold py-2 px-4 border border-transparent focus:outline-none rounded-lg shadow-sm" @click="addTask(name, task.boardName, description, typeTask, priorityTask, timeEstimateMinutes)" :class="`bg-${colorSelected.value}-700 hover:bg-${colorSelected.value}-800`">
+              <button type="button" class="text-white font-semibold py-2 px-4 border border-transparent focus:outline-none rounded-lg shadow-sm" @click="addTask(name, task.boardName, description, typeTask, priorityTask, timeEstimateMinutes, selectedOwner)" :class="`bg-${colorSelected.value}-700 hover:bg-${colorSelected.value}-800`">
                 Сохранить
               </button>
             </div>
@@ -332,12 +332,29 @@
 
             <div class="mb-4">
               <label class="text-gray-300 block mb-1 font-bold text-sm">Ответственный</label>
-              <input
-                type="text"
-                class="bg-gray-800 appearance-none border-2 border-gray-600 rounded-lg w-full py-2 px-4 text-gray-300 leading-tight"
-                :value="`{{ request.user.username }}`"
-                readonly
-              />
+              <div x-data="{ isOpen: false }" class="relative">
+                <button
+                  @click="isOpen = !isOpen"
+                  class="bg-gray-900 appearance-none border-2 border-gray-600 rounded-lg w-full py-2 px-4 text-gray-300 leading-tight focus:outline-none focus:bg-gray-900 focus:border-blue-500 text-left"
+                >
+                  <span x-text="selectedOwner || '{{ request.user.username }}'"></span>
+                </button>
+                <div
+                  x-show="isOpen"
+                  @click.outside="isOpen = false"
+                  class="absolute z-10 w-full mt-1 bg-gray-900 border-2 border-gray-600 rounded-lg overflow-hidden"
+                >
+                  <template x-for="user in groupMembers" :key="user">
+                    <div
+                      @click="selectedOwner = user; isOpen = false"
+                      class="px-4 py-2 text-gray-300 hover:bg-gray-800 cursor-pointer"
+                      :class="{ 'bg-gray-800': selectedOwner === user }"
+                    >
+                      <span x-text="user"></span>
+                    </div>
+                  </template>
+                </div>
+              </div>
             </div>
 
             <div class="mb-4">
@@ -648,21 +665,20 @@ const api_client = axios.create({
     headers: { 'X-CSRFToken': csrftoken },
 });
 
-const addTask = async (name, board, description, taskType, priorityTask, timeEstimate) => {
+const addTask = async (name, board, description, taskType, priorityTask, timeEstimate,responsible  // Правильное имя параметра
+) => {
   try {
-    // Преобразуем время из формата "4д 17ч 23м" в минуты
     const timeEstimateMinutes = parseTimeInput(timeEstimate);
-
     const res = await api_client.post('/tasks/', {
       name,
       boardName: board,
       description,
       typeTask: taskType,
       priorityTask,
-      timeEstimateMinutes,  // Отправляем уже преобразованное значение
+      timeEstimateMinutes,
+      responsible: responsible  // Используем правильное имя
     });
     location.reload();
-    console.log('Задача создана:', res.data);
   } catch (e) {
     console.error(e);
   }
@@ -723,6 +739,8 @@ function board() {
         selectedTaskForDeletion: null,
         newTimeLog: { duration: '', comment: '' },
         bannerImage: '',
+        selectedOwner: '{{ request.user.username }}',
+        groupMembers: [],
         colors: [{
             label: '#3182ce',
             value: 'blue'
@@ -798,38 +816,21 @@ function board() {
           this.timeEstimateMinutes = '';
           this.task.boardName = board;
           this.openModalAdd = true;
+          this.selectedOwner = '{{ request.user.username }}';
           setTimeout(() => this.$refs.taskName.focus(), 200);
-        },
 
-        tasks: [],
-        showModalEdit(board, uuid, name, description, typeTask, priorityTask, timeEstimateMinutes) {
-          this.task.boardName = board;
-          this.task.uuid = uuid;
-          this.task.name = name;
-          this.task.description = description;
-          this.task.typeTask = typeTask;
-          this.task.priorityTask = priorityTask;
-          this.task.timeEstimateMinutes = timeEstimateMinutes;
-          this.selectedTimeLog = '';
-          this.selectedTimeLogComment = '';
-          this.openModalEdit = true;
-          this.loadTimeLogs(uuid);
+          const currentTask = this.tasks.find(t => t.boardName === board);
+          if (currentTask) {
+            const groupUUID = currentTask.group_uuid;
+            fetch(`/api/groups/${groupUUID}/`)
+              .then(response => response.json())
+              .then(data => {
+                this.groupMembers = data.members;
+              })
+              .catch(error => console.error('Ошибка загрузки участников:', error));
+          }
+
           setTimeout(() => this.$refs.taskName.focus(), 200);
-        },
-
-        loadTimeLogs(taskUuid) {
-            console.log('Загрузка TimeLogs для задачи:', taskUuid);
-            api_client.get(`/timelogs/task/${taskUuid}/`)
-                .then(response => {
-                    console.log('Получены TimeLogs:', response.data);
-                    this.taskTimeLogs = response.data;
-
-                    // Вычисляем общее количество минут
-                    this.totalMinutesSpent = this.taskTimeLogs.reduce((total, log) => total + log.minutesSpent, 0);
-                })
-                .catch(error => {
-                    console.error('Ошибка при загрузке TimeLogs:', error);
-                });
         },
 
         async createTimeLog(taskUuid) {
@@ -899,6 +900,7 @@ function board() {
                    return {
                         uuid: t.uuid,
                         name: t.name,
+                        owner: t.owner,
                         task_id: t.task_id,
                         boardName: t.boardName,
                         description: t.description,
@@ -908,6 +910,7 @@ function board() {
                         priorityTask: t.priorityTask,
                         timeEstimateMinutes: timeEstimate,
                         totalMinutesSpent: timeSpent,
+                        group_uuid: t.group_uuid
                 };
             });
         },
