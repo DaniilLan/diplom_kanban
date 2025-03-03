@@ -1,5 +1,4 @@
 from django.shortcuts import get_object_or_404
-from rest_framework.exceptions import PermissionDenied
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from api.serializers import TaskSerializer, TimeLogSerializer, GroupSerializer
@@ -10,6 +9,7 @@ from rest_framework.authentication import SessionAuthentication
 from rest_framework.permissions import IsAuthenticated
 from django.db.models import Q
 
+
 class ListTask(generics.ListCreateAPIView):
     serializer_class = TaskSerializer
     authentication_classes = [SessionAuthentication]
@@ -19,19 +19,17 @@ class ListTask(generics.ListCreateAPIView):
         user = self.request.user
         return Task.objects.filter(
             Q(owner=user) |
-            Q(group__members__user=user)
+            Q(groups__members__user=user)  # Используем groups вместо group
         ).distinct()
 
     def perform_create(self, serializer):
-        # Получаем первую группу, где пользователь является участником или владельцем
-        user_group = Group.objects.filter(
-            Q(members__user=self.request.user) |
-            Q(owner=self.request.user)
-        ).first()
+        # Получаем список UUID групп из запроса
+        groups_uuids = self.request.data.get('groups', [])
+        groups = Group.objects.filter(uuid__in=groups_uuids)
 
         serializer.save(
             owner=self.request.user,
-            group=user_group  # Автоматически устанавливаем группу
+            groups=groups.all()  # Сохраняем все выбранные группы
         )
 
 class TimeLogList(generics.ListCreateAPIView):
@@ -78,27 +76,24 @@ class DetailTask(generics.RetrieveUpdateDestroyAPIView):
 
     def get_queryset(self):
         user = self.request.user
-        return Task.objects.filter(owner=user)
-
-    def perform_destroy(self, instance):
-        # Сохранение информации об удаляемой задаче
-        DeletedTask.objects.create(
-            owner=instance.owner,  # Сохраняем владельца задачи
-            task_id=instance.task_id,  # Используем id задачи
-            name=instance.name,  # Сохраняем название задачи
-            description=instance.description,  # Сохраняем описание задачи
-            typeTask=instance.typeTask,  # Сохраняем тип задачи
-            priorityTask=instance.priorityTask, # Сохраняем приоритет задачи
-        )
-        # Удаление оригинальной задачи
-        instance.delete()
-
-    def get_queryset(self):
-        user = self.request.user
         return Task.objects.filter(
             Q(owner=user) |
-            Q(group__members__user=user)
+            Q(groups__members__user=user)  # Используем groups вместо group
         ).distinct()
+
+    def perform_destroy(self, instance):
+        # Проверяем существование записи перед созданием
+        if not DeletedTask.objects.filter(task_id=instance.task_id).exists():
+            DeletedTask.objects.create(
+                owner=instance.owner,
+                task_id=instance.task_id,
+                name=instance.name,
+                description=instance.description,
+                typeTask=instance.typeTask,
+                priorityTask=instance.priorityTask,
+                timeEstimateMinutes=instance.timeEstimateMinutes
+            )
+        instance.delete()
 
 class GroupList(generics.ListCreateAPIView):
     serializer_class = GroupSerializer

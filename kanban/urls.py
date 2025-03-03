@@ -18,7 +18,7 @@ from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import include, path
 
-from api.views import TimeLogList, ListTask, GroupList, GroupDetail
+from api.views import TimeLogList, ListTask, GroupList
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -26,6 +26,8 @@ urlpatterns = [
     path('api/', include('api.urls')),
     path('tasks/', ListTask.as_view()),
     path('timelogs/', TimeLogList.as_view(), name='timelog-list'),
+    path('groups/', GroupList.as_view(), name='group-list'),
+
 ]
 
 if settings.DEBUG:

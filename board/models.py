@@ -65,7 +65,7 @@ class UsersGroup(models.Model):
 class Task(models.Model):
     owner = models.ForeignKey('auth.User', on_delete=models.CASCADE, related_name='tasks')
     responsible = models.ForeignKey('auth.User', on_delete=models.SET_NULL, null=True, blank=True, related_name='assigned_tasks', verbose_name="Ответственный")
-    group = models.ForeignKey(Group, on_delete=models.SET_NULL, null=True, blank=True, related_name='tasks', verbose_name="Группа")
+    groups = models.ManyToManyField(Group, related_name='tasks', verbose_name="Группы", blank=True)
     uuid = models.UUIDField(default=uuid.uuid4, unique=True, primary_key=True, editable=False)
     task_id = models.PositiveIntegerField(unique=True, null=True, blank=True)
     name = models.CharField(max_length=500)

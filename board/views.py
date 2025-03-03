@@ -7,17 +7,24 @@ from django.utils.formats import localize
 from django.db.models import Q
 from .forms import NewUserForm
 from .models import Group, Task
-
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from .models import UsersGroup
 
 @login_required
 def home(request):
     user_groups = Group.objects.filter(members__user=request.user)
     tasks = Task.objects.filter(
         Q(owner=request.user) |
-        Q(group__in=user_groups)
+        Q(groups__in=user_groups)
     ).distinct()
+
     all_tasks = []
     for t in tasks:
+        # Получаем список групп задачи
+        task_groups = t.groups.all()
+
         t_dict = {
             'uuid': str(t.uuid),
             'name': t.name if t.name is not None else 'Без названия',
@@ -28,8 +35,13 @@ def home(request):
             'typeTask': str(t.typeTask),
             'priorityTask': str(t.priorityTask),
             'timeEstimateMinutes': str(t.timeEstimateMinutes),
-            'group': t.group.name,
-            'group_uuid': str(t.group.uuid),
+            'groups': [
+                {
+                    'uuid': str(g.uuid),
+                    'name': g.name
+                }
+                for g in task_groups
+            ],
             'responsible': str(t.responsible),
         }
         all_tasks.append(t_dict)
@@ -91,3 +103,55 @@ def logout_request(request):
     logout(request)
     messages.info(request, 'Вы вышли из аккаунта.')
     return redirect('board:login')
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_user_group_members(request):
+    user = request.user
+    # Получаем все группы пользователя
+    user_groups = UsersGroup.objects.filter(user=user).values_list('group', flat=True)
+    # Получаем всех участников этих групп
+    members = UsersGroup.objects.filter(group__in=user_groups).select_related('user')
+    # Собираем уникальные username
+    unique_usernames = set(member.user.username for member in members)
+    return Response(list(unique_usernames))
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_task_group_members(request, task_uuid):
+    try:
+        task = Task.objects.get(uuid=task_uuid)
+        # Получаем все группы задачи
+        groups = task.groups.all()
+        # Получаем всех участников этих групп
+        members = UsersGroup.objects.filter(group__in=groups).select_related('user')
+        # Собираем уникальные username
+        unique_usernames = set(member.user.username for member in members)
+        return Response(list(unique_usernames))
+    except Task.DoesNotExist:
+        return Response({'error': 'Task not found'}, status=404)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_user_groups(request):
+    user = request.user
+    groups = UsersGroup.objects.filter(user=user).select_related('group')
+    groups_data = [{
+        'uuid': ug.group.uuid,
+        'name': ug.group.name
+    } for ug in groups]
+    return Response(groups_data)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_task_groups(request, task_uuid):
+    try:
+        task = Task.objects.get(uuid=task_uuid)
+        groups = task.groups.all().values('uuid', 'name')
+        return Response(groups)
+    except Task.DoesNotExist:
+        return Response({'error': 'Task not found'}, status=404)

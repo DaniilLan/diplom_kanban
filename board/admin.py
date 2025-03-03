@@ -50,7 +50,7 @@ class UsersGroupAdmin(admin.ModelAdmin):
 # Остальные модели остаются без изменений
 @admin.register(Task)
 class TaskAdmin(admin.ModelAdmin):
-    pass
+    filter_horizontal = ('groups',)
 
 
 @admin.register(TimeLog)
