@@ -248,7 +248,7 @@
 
             <div class="mb-4">
               <label class="text-gray-300 block mb-1 font-bold text-sm">Тип</label>
-              <div x-data="{ isOpen: false, typeTask: 'task' }" class="relative">
+              <div x-data="{ isOpen: false }" class="relative">
                 <!-- Кнопка-триггер -->
                 <button
                   @click="isOpen = !isOpen"
@@ -286,7 +286,7 @@
 
             <div class="mb-4">
               <label class="text-gray-300 block mb-1 font-bold text-sm">Приоритет</label>
-              <div x-data="{ isOpen: false, priorityTask: 'medium' }" class="relative">
+              <div x-data="{ isOpen: false }" class="relative">
                 <!-- Кнопка-триггер -->
                 <button
                   @click="isOpen = !isOpen"
@@ -934,9 +934,9 @@ function board() {
           date: new Date(),
           uuid: '',
           description: '',
-          typeTask: '',
-          priorityTask: '',
           timeEstimateMinutes: '',
+          typeTask: 'task', // Добавьте это
+          priorityTask: 'medium', // Добавьте это
 
         },
 
@@ -950,8 +950,8 @@ function board() {
         showModalAdd(board) {
             this.name = '';
             this.description = '';
-            this.typeTask = '';
-            this.priorityTask = '';
+            this.typeTask = 'task';
+            this.priorityTask = 'medium';
             this.timeEstimateMinutes = '';
             this.task.boardName = board;
             this.openModalAdd = true;
