@@ -1,4 +1,5 @@
 from django.shortcuts import get_object_or_404
+from rest_framework.exceptions import PermissionDenied
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from api.serializers import TaskSerializer, TimeLogSerializer, GroupSerializer
@@ -32,28 +33,42 @@ class ListTask(generics.ListCreateAPIView):
             groups=groups.all()  # Сохраняем все выбранные группы
         )
 
+
 class TimeLogList(generics.ListCreateAPIView):
-    queryset = TimeLog.objects.all()
     serializer_class = TimeLogSerializer
     authentication_classes = [SessionAuthentication]
     permission_classes = [IsAuthenticated]
 
-
     def get_queryset(self):
         user = self.request.user
-        return TimeLog.objects.filter(owner=user)
+        accessible_tasks = Task.objects.filter(
+            Q(owner=user) |
+            Q(groups__members__user=user)
+        ).distinct()
+
+        return TimeLog.objects.filter(task__in=accessible_tasks)
 
     def perform_create(self, serializer):
         serializer.save(owner=self.request.user)
 
-class TimeLogByTask(APIView):
-    authentication_classes = [SessionAuthentication]
+
+class TimeLogsByTask(generics.ListAPIView):
+    serializer_class = TimeLogSerializer
     permission_classes = [IsAuthenticated]
 
-    def get(self, request, task_uuid):
-        timelogs = TimeLog.objects.filter(task=task_uuid, owner=request.user)
-        serializer = TimeLogSerializer(timelogs, many=True)
-        return Response(serializer.data)
+    def get_queryset(self):
+        task_uuid = self.kwargs['task_uuid']
+        task = get_object_or_404(Task, uuid=task_uuid)
+        user = self.request.user
+
+        if (
+                task.owner != user
+                and not task.groups.filter(members__user=user).exists()
+        ):
+            raise PermissionDenied("У вас нет доступа к этой задаче.")
+
+        return TimeLog.objects.filter(task=task)
+
 
 class TimeLogCreate(generics.CreateAPIView):
     serializer_class = TimeLogSerializer
@@ -61,11 +76,13 @@ class TimeLogCreate(generics.CreateAPIView):
     permission_classes = [IsAuthenticated]
 
     def perform_create(self, serializer):
-        task = get_object_or_404(
-            Task,
-            uuid=self.kwargs['task_uuid'],
-            owner=self.request.user
-        )
+        task = get_object_or_404(Task, uuid=self.kwargs['task_uuid'])
+        if (
+                task.owner != self.request.user
+                and not task.groups.filter(members__user=self.request.user).exists()
+        ):
+            raise PermissionDenied("У вас нет доступа к этой задаче.")
+
         serializer.save(owner=self.request.user, task=task)
 
 class DetailTask(generics.RetrieveUpdateDestroyAPIView):

@@ -21,16 +21,6 @@ class TimeLogSerializer(serializers.ModelSerializer):
         )
         read_only_fields = ('owner', 'date', 'uuid', 'task')
 
-    def validate_task(self, value):
-        """
-        Проверяем, что пользователь имеет доступ к задаче.
-        """
-        user = self.context['request'].user
-        if value.owner != user and user not in value.groups.members.all():
-            raise serializers.ValidationError(
-                "У вас нет доступа к этой задаче."
-            )
-        return value
 
 class UserSerializer(serializers.ModelSerializer):
     tasks = serializers.PrimaryKeyRelatedField(many=True, read_only=True)

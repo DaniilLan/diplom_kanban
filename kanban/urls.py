@@ -25,7 +25,6 @@ urlpatterns = [
     path('', include('board.urls')),
     path('api/', include('api.urls')),
     path('tasks/', ListTask.as_view()),
-    path('timelogs/', TimeLogList.as_view(), name='timelog-list'),
     path('groups/', GroupList.as_view(), name='group-list'),
 
 ]

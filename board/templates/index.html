@@ -669,48 +669,60 @@
                     <hr class="border-gray-600 my-4">
 
                      <div class="mb-4" x-data="{ isOpen: false, tempSelectedTimeLog: '' }">
-                      <label class="text-gray-300 block mb-1 font-bold text-sm">Затраченное время</label>
-                      <div class="relative">
-                        <!-- Кнопка-триггер -->
-                        <button
-                          @click="isOpen = !isOpen; $nextTick(() => $refs.dropdown.scrollTo({ top: 0, behavior: 'auto' }))"
-                          class="bg-gray-900 appearance-none border-2 border-gray-600 rounded-lg w-full py-2 px-4 text-gray-300 leading-tight focus:outline-none focus:bg-gray-900 focus:border-blue-500 text-left flex justify-between items-center"
-                        >
-                          <span x-text="selectedTimeLog
-                            ? `${convertMinutesToTime(taskTimeLogs.find(log => log.uuid === selectedTimeLog).minutesSpent)} - ${taskTimeLogs.find(log => log.uuid === selectedTimeLog).date}`
-                            : `${convertMinutesToTime(totalMinutesSpent)} - за все время`">
-                          </span>
-                          <i x-show="!isOpen" class="uil uil-angle-up transform transition-transform"></i>
-                          <i x-show="isOpen" class="uil uil-angle-down transform transition-transform"></i>
-                        </button>
+                        <label class="text-gray-300 block mb-1 font-bold text-sm">Затраченное время</label>
+                        <div class="relative">
+                            <!-- Кнопка-триггер -->
+                            <button
+                                @click="isOpen = !isOpen; $nextTick(() => $refs.dropdown.scrollTo({ top: 0, behavior: 'auto' }))"
+                                class="bg-gray-900 appearance-none border-2 border-gray-600 rounded-lg w-full py-2 px-4 text-gray-300 leading-tight focus:outline-none focus:bg-gray-900 focus:border-blue-500 text-left flex justify-between items-center"
+                            >
+                                <div class="flex justify-between items-center w-full pr-2">
+                                    <template x-if="selectedTimeLog">
+                                        <div class="flex items-center">
+                                            <span x-text="`${convertMinutesToTime(taskTimeLogs.find(log => log.uuid === selectedTimeLog).minutesSpent)} - ${taskTimeLogs.find(log => log.uuid === selectedTimeLog).date}`"></span>
+                                            <span class="text-gray-500 ml-2" x-text="taskTimeLogs.find(log => log.uuid === selectedTimeLog).owner_username" style="margin-left: 1rem;"></span>
+                                        </div>
+                                    </template>
+                                    <template x-if="!selectedTimeLog">
+                                        <span x-text="`${convertMinutesToTime(totalMinutesSpent)} - за все время`"></span>
+                                    </template>
+                                    <div class="flex items-center">
+                                        <i x-show="!isOpen" class="uil uil-angle-up transform transition-transform"></i>
+                                        <i x-show="isOpen" class="uil uil-angle-down transform transition-transform"></i>
+                                    </div>
+                                </div>
+                            </button>
 
-                        <!-- Выпадающий список -->
-                        <div
-                          x-show="isOpen"
-                          @click.outside="isOpen = false; tempSelectedTimeLog = ''"
-                          x-ref="dropdown"
-                          class="absolute z-10 w-full mt-1 bg-gray-900 border-2 border-gray-600 rounded-lg overflow-hidden custom-scroll"
-                          style="max-height: 221px; overflow-y: auto;"
-                        >
-                          <!-- Опция "Все время" -->
-                          <div
-                            @click="selectedTimeLog = ''; isOpen = false; onTimeLogSelect()"
-                            class="px-4 py-2 text-gray-300 hover:bg-gray-800 cursor-pointer"
-                            :class="{'bg-gray-800': !selectedTimeLog}">
-                            <span x-text="`${convertMinutesToTime(totalMinutesSpent)} - за все время`"></span>
-                          </div>
-
-                          <!-- Список логов (используем sortedTaskTimeLogs) -->
-                          <template x-for="log in sortedTaskTimeLogs()" :key="log.uuid">
+                            <!-- Выпадающий список -->
                             <div
-                              @click="tempSelectedTimeLog = log.uuid; selectedTimeLog = log.uuid; isOpen = false; onTimeLogSelect()"
-                              class="px-4 py-2 text-gray-300 hover:bg-gray-800 cursor-pointer"
-                              :class="{'bg-gray-800': selectedTimeLog === log.uuid}">
-                              <span x-text="`${convertMinutesToTime(log.minutesSpent)} - ${log.date}`"></span>
+                                x-show="isOpen"
+                                @click.outside="isOpen = false; tempSelectedTimeLog = ''"
+                                x-ref="dropdown"
+                                class="absolute z-10 w-full mt-1 bg-gray-900 border-2 border-gray-600 rounded-lg overflow-hidden custom-scroll"
+                                style="max-height: 221px; overflow-y: auto;"
+                            >
+                                <!-- Опция "Все время" -->
+                                <div
+                                    @click="selectedTimeLog = ''; isOpen = false; onTimeLogSelect()"
+                                    class="px-4 py-2 text-gray-300 hover:bg-gray-800 cursor-pointer"
+                                    :class="{'bg-gray-800': !selectedTimeLog}">
+                                    <span x-text="`${convertMinutesToTime(totalMinutesSpent)} - за все время`"></span>
+                                </div>
+
+                                <!-- Список логов -->
+                                <template x-for="log in sortedTaskTimeLogs()" :key="log.uuid">
+                                    <div
+                                        @click="tempSelectedTimeLog = log.uuid; selectedTimeLog = log.uuid; isOpen = false; onTimeLogSelect()"
+                                        class="px-4 py-2 text-gray-300 hover:bg-gray-800 cursor-pointer"
+                                        :class="{'bg-gray-800': selectedTimeLog === log.uuid}">
+                                        <div class="flex justify-between items-center">
+                                            <span x-text="`${convertMinutesToTime(log.minutesSpent)} - ${log.date}`"></span>
+                                            <span class="text-gray-500 text-sm" x-text="log.owner_username"></span>
+                                        </div>
+                                    </div>
+                                </template>
                             </div>
-                          </template>
                         </div>
-                      </div>
                     </div>
 
                     <div class="mb-4">
@@ -831,7 +843,6 @@ const removeTask = async taskUuid => {
 const updateTask = async (taskUuid, taskName, taskDescription, typeTask, priorityTask, timeEstimate, responsible) => {
   try {
     const timeEstimateMinutes = parseTimeInput(timeEstimate) || 0;
-    const groupUUIDs = this.taskGroups.map(g => g.uuid);
 
     const res = await api_client.patch(`/task/${taskUuid}`, {
       uuid: taskUuid,
@@ -841,7 +852,6 @@ const updateTask = async (taskUuid, taskName, taskDescription, typeTask, priorit
       priorityTask: priorityTask,
       timeEstimateMinutes: timeEstimateMinutes,
       responsible: responsible,
-      groups: groupUUIDs
     });
     if(res.status === 200) location.reload();
   } catch (e) {
@@ -956,8 +966,8 @@ function board() {
             this.task.boardName = board;
             this.openModalAdd = true;
             this.selectedGroups = [];
+            this.selectedTimeLogComment = '';
 
-            // Загружаем всех пользователей групп текущего пользователя
             this.selectedGroups = [];
             this.fetchGroupData().then(() => {
                 this.fetchUserGroups();
@@ -1037,7 +1047,7 @@ function board() {
 
         sortedGroupMembers() {
             if (!this.responsible) {
-              return this.groupMembers; // Если ответственный не выбран, возвращаем исходный список
+              return this.groupMembers;
             }
             // Сортируем список так, чтобы выбранный пользователь был на первом месте
             return [
@@ -1048,7 +1058,7 @@ function board() {
 
         sortedTaskTimeLogs() {
             if (!this.selectedTimeLog) {
-              return this.taskTimeLogs; // Если лог не выбран, возвращаем исходный список
+              return this.taskTimeLogs;
             }
             const selectedLog = this.taskTimeLogs.find(log => log.uuid === this.selectedTimeLog);
             return [
@@ -1110,7 +1120,6 @@ function board() {
                 if (this.selectedTimeLog === '') {
                     this.selectedTimeLogComment = '';
                 } else {
-                    // Иначе можно выполнить другие действия, например, загрузить комментарий
                     const selectedLog = this.taskTimeLogs.find(log => log.uuid === this.selectedTimeLog);
                     if (selectedLog) {
                         this.selectedTimeLogComment = selectedLog.comment || '';

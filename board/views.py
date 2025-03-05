@@ -6,7 +6,7 @@ from django.shortcuts import redirect, render
 from django.utils.formats import localize
 from django.db.models import Q
 from .forms import NewUserForm
-from .models import Group, Task
+from .models import Group, Task, TimeLog
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -47,8 +47,8 @@ def home(request):
         all_tasks.append(t_dict)
 
     all_timelogs = []
-    t_timelogs = request.user.timelogs.all()
-    for tl in t_timelogs:
+    accessible_timelogs = TimeLog.objects.filter(task__in=tasks)
+    for tl in accessible_timelogs:
         t_dict = {
             "task": str(tl.task.uuid),
             "minutesSpent": tl.minutesSpent,
