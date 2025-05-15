@@ -27,61 +27,93 @@
             <!-- Приветствие -->
             <div class="flex justify-between items-center" style="padding-top: 4rem;">
               <div>
-                <h1 class="text-xl md:text-2xl text-gray-300 font-semibold shake">
-                  {% now "H" as current_time %}
-                  {% if current_time|add:"0" < 12 %}
-                   Доброе утро, {{ request.user.username }}
-                  {% elif current_time|add:"0" > 17 %}
-                   Добрый вечер, {{ request.user.username }}
-                  {% else %}
-                   Добрый день, {{ request.user.username }}
-                  {% endif %}
+                <h1 class="text-xl md:text-2xl text-gray-300 font-semibold">
+                    {{ request.user.username }}
+                    <span x-show="userGroups.length > 0" class="text-gray-500" style="font-style: italic;font-weight: 350;">
+                        - <span x-text="userGroups.map(group => group.name).join(', ')"></span>
+                    </span>
                 </h1>
                 <div class="text-sm" :class="`text-${colorSelected.value}-400`">{% now 'SHORT_DATE_FORMAT' %}</div>
               </div>
-              <div x-data="{ showSettingsPage: false }">
-                <div class="flex justify-between">
-                  <div>
-                    <a @click.prevent="showSettingsPage = !showSettingsPage" href="#" class="rounded-lg px-3 py-2 font-medium inline-flex" :class="`text-${colorSelected.value}-500 bg-${colorSelected.value}-800 hover:bg-${colorSelected.value}-700`">
-                      <i class="uil bx bxs-color-fill text-left mr-1" style="font-size: larger;"></i>Тема</a>
-                    <a href="/logout" class="rounded-lg px-3 py-2 font-medium inline-flex items-center" :class="`text-${colorSelected.value}-500 bg-${colorSelected.value}-800 hover:bg-${colorSelected.value}-700`">
-                      <i class="uil uil-sign-out-alt mr-1"></i>Выход</a>
-                  </div>
-                  <!-- Блок с цветами темы -->
-                  <div x-show="showSettingsPage"
-                       x-transition:enter="transition ease-out duration-300"
-                       x-transition:enter-start="opacity-0 translate-x-64"
-                       x-transition:enter-end="opacity-100 translate-x-0"
-                       x-transition:leave="transition ease-in duration-300"
-                       x-transition:leave-start="opacity-100 translate-x-0"
-                       x-transition:leave-end="opacity-0 translate-x-64"
-                       class="fixed top-0 mt-2 bg-gray-800 p-4 rounded-lg shadow-lg z-10 transform"
-                       style="top: 7rem; width: 14rem; right: 1rem;">
-                    <div class="bg-gray-900 rounded-lg shadow-md" style="padding: 10px; max-width: 42rem;">
-                      <div class="px-1 w-full">
-                        <div class="flex flex-wrap -mx-2 justify-center">
-                          <!-- Список цветов -->
-                          <template x-for="(color, index) in colors" :key="index">
-                            <div class="px-2" style="margin-top: 5px">
-                              <template x-if="colorSelected.value === color.value">
-                                <div class="w-8 h-8 inline-flex rounded-full cursor-pointer border-4 border-white"
-                                     :style="`background: ${color.label}; box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.2);`"></div>
-                              </template>
-                              <template x-if="colorSelected.value != color.value">
-                                <div @click="colorSelected = color"
-                                     class="w-8 h-8 inline-flex rounded-full cursor-pointer border-4 border-gray-500"
-                                     :style="`background: ${color.label};`"></div>
-                              </template>
-                            </div>
-                          </template>
-                          <div class="w-full text-center" style="padding-top: 1rem;">
-                            <button type="button"
-                                    @click="saveSettings"
-                                    class="text-white font-semibold py-2 px-4 rounded-lg"
-                                    :class="`bg-${colorSelected.value}-700 hover:bg-${colorSelected.value}-800`">
-                              Сохранить
-                            </button>
+              <div x-data="{
+                  showSettingsPage: false,
+                  buttonsVisible: false,
+                  isRotating: false,
+                  rotationDirection: 'left'
+                }">
+                <div class="flex justify-end items-center"> <!-- Изменил justify-between на justify-end -->
+                    <div class="h-10 w-1 mr-2 rounded-full" :class="`bg-${colorSelected.value}-600`"></div>
+                      <!-- Кнопки (скрытые по умолчанию) -->
+                      <div class="flex space-x-2 overflow-hidden transition-all duration-500 ease-in-out"
+                           x-ref="buttonsContainer"
+                           :style="buttonsVisible ? 'max-width: 200px; opacity: 1;' : 'max-width: 0; opacity: 0;'">
+                        <a @click.prevent="showSettingsPage = !showSettingsPage" href="#" class="rounded-lg px-3 py-2 font-medium inline-flex whitespace-nowrap"
+                           :class="`text-${colorSelected.value}-500 bg-${colorSelected.value}-800 hover:bg-${colorSelected.value}-700`">
+                          <i class="uil bx bxs-color-fill text-left mr-1" style="font-size: larger;"></i>Тема</a>
+                        <a href="/logout" class="rounded-lg px-3 py-2 font-medium inline-flex items-center whitespace-nowrap"
+                           :class="`text-${colorSelected.value}-500 bg-${colorSelected.value}-800 hover:bg-${colorSelected.value}-700`">
+                          <i class="uil uil-sign-out-alt mr-1"></i>Выход</a>
+                      </div>
+
+                      <!-- Шестеренка -->
+                        <button @click="
+                          if (!isRotating) {
+                            isRotating = true;
+                            const wasVisible = buttonsVisible;
+                            buttonsVisible = !buttonsVisible;
+                            setTimeout(() => { isRotating = false }, 500);
+                          }
+                        " class="ml-2 focus:outline-none flex items-center justify-center w-8 h-8">
+                          <i class="bx bxs-cog"
+                             :class="`text-${colorSelected.value}-500 hover:text-${colorSelected.value}-600`"
+                             x-data="{ currentRotation: 0 }"
+                             :style="`
+                               transform: rotate(${buttonsVisible ? '-180deg' : '0deg'});
+                               transition: transform 0.5s ease-in-out;
+                               display: inline-block;
+                               width: 1em;
+                               height: 1em;
+                               line-height: 1;
+                               font-size: 2rem;
+                               transform-origin: center;
+                             `"></i>
+                        </button>
+                </div>
+
+                <!-- Блок с цветами темы -->
+                <div x-show="showSettingsPage"
+                     x-transition:enter="transition ease-out duration-300"
+                     x-transition:enter-start="opacity-0 translate-x-64"
+                     x-transition:enter-end="opacity-100 translate-x-0"
+                     x-transition:leave="transition ease-in duration-300"
+                     x-transition:leave-start="opacity-100 translate-x-0"
+                     x-transition:leave-end="opacity-0 translate-x-64"
+                     class="fixed top-0 mt-2 bg-gray-800 p-4 rounded-lg shadow-lg z-10 transform"
+                     style="top: 7rem; width: 14rem; right: 1rem;">
+                  <div class="bg-gray-900 rounded-lg shadow-md" style="padding: 10px; max-width: 42rem;">
+                    <div class="px-1 w-full">
+                      <div class="flex flex-wrap -mx-2 justify-center">
+                        <!-- Список цветов -->
+                        <template x-for="(color, index) in colors" :key="index">
+                          <div class="px-2" style="margin-top: 5px">
+                            <template x-if="colorSelected.value === color.value">
+                              <div class="w-8 h-8 inline-flex rounded-full cursor-pointer border-4 border-white"
+                                   :style="`background: ${color.label}; box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.2);`"></div>
+                            </template>
+                            <template x-if="colorSelected.value != color.value">
+                              <div @click="colorSelected = color"
+                                   class="w-8 h-8 inline-flex rounded-full cursor-pointer border-4 border-gray-500"
+                                   :style="`background: ${color.label};`"></div>
+                            </template>
                           </div>
+                        </template>
+                        <div class="w-full text-center" style="padding-top: 1rem;">
+                          <button type="button"
+                                  @click="saveSettings"
+                                  class="text-white font-semibold py-2 px-4 rounded-lg"
+                                  :class="`bg-${colorSelected.value}-700 hover:bg-${colorSelected.value}-800`">
+                            Сохранить
+                          </button>
                         </div>
                       </div>
                     </div>
@@ -116,7 +148,7 @@
                           <i class="uil uil-book-medical mr-1"></i>Добавить
                         </a>
                       </div>
-                      <div class="px-4">
+                      <div class="px-4 shake">
                         <div @dragover="onDragOver(event)" @drop="onDrop(event, board)" @dragenter="onDragEnter(event)" @dragleave="onDragLeave(event)" class="pt-2 pb-20 rounded-lg">
                           <template x-for="(t, taskIndex) in tasks.filter(t => t.boardName === board)" :key="taskIndex">
                             <div :id="t.uuid">
@@ -196,7 +228,7 @@
 
     <!-- Футер -->
     <div class="container mx-auto px-4 py-10">
-      <p class="text-gray-600 text-center"><strong><i class="uil uil-edit mr-1"></i>Kanban</strong> работает на <a href="https://www.django-rest-framework.org/" :class="`text-${colorSelected.value}-500 hover:text-${colorSelected.value}-600`">Django REST Framework</a> и <a href="https://alpinejs.dev/" :class="`text-${colorSelected.value}-500 hover:text-${colorSelected.value}-600`">AlpineJS</a>.</p>
+      <p class="text-gray-600 text-center"><strong><i class="uil uil-edit mr-1"></i>Пример гибрида Kanban и Scrum,</strong> работает на <a href="https://www.django-rest-framework.org/" :class="`text-${colorSelected.value}-500 hover:text-${colorSelected.value}-600`">Django REST Framework</a> и <a href="https://alpinejs.dev/" :class="`text-${colorSelected.value}-500 hover:text-${colorSelected.value}-600`">AlpineJS</a>.</p>
     </div>
     <!-- конец футера -->
 
@@ -676,7 +708,7 @@
                                 @click="isOpen = !isOpen; $nextTick(() => $refs.dropdown.scrollTo({ top: 0, behavior: 'auto' }))"
                                 class="bg-gray-900 appearance-none border-2 border-gray-600 rounded-lg w-full py-2 px-4 text-gray-300 leading-tight focus:outline-none focus:bg-gray-900 focus:border-blue-500 text-left flex justify-between items-center"
                             >
-                                <div class="flex justify-between items-center w-full pr-2">
+                                <div class="flex justify-between items-center w-full">
                                     <template x-if="selectedTimeLog">
                                         <div class="flex items-center">
                                             <span x-text="`${convertMinutesToTime(taskTimeLogs.find(log => log.uuid === selectedTimeLog).minutesSpent)} - ${taskTimeLogs.find(log => log.uuid === selectedTimeLog).date}`"></span>
@@ -1134,6 +1166,8 @@ function board() {
                 label: '#3182ce',
                 value: 'blue'
             };
+            this.fetchUserGroups();
+            this.userGroups = [];
             const tasksFromDjango = {{ tasks | safe }};
             const timelogsFromDjango = {{ timelogs | safe }};
 
@@ -1206,4 +1240,4 @@ function board() {
 </script>
 
 </body>
- {% endblock %}
+{% endblock %}
