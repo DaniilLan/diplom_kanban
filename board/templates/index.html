@@ -11,11 +11,10 @@
     <div class="flex-1">
 
       <!-- Хедер -->
-      <div class="bg-cover bg-center bg-no-repeat" :class="`bg-${colorSelected.value}-900`" :style="`background-image: url(${bannerImage})`">
-        <div class="container mx-auto flex items-center" style="display: inline-flex;">
-          <img src="static/icon_web.png" alt="Иконка сайта" style="height: 100px; width: 100px; flex-shrink: 0;"> <!-- Добавлены width и flex-shrink -->
-          <div class="ml-4" style="margin-left: 15rem;"> <!-- Добавлен отступ слева -->
-            <!-- Ваш текущий блок приветствия -->
+      <div class="bg-cover bg-center bg-no-repeat" :class="`bg-${colorSelected.value}-900`" :style="">
+        <div class="container mx-auto flex items-center" style="display: inline-flex; padding-left: 1rem;">
+          <img src="static/icon_web.png" alt="Иконка сайта" style="height: 100px; width: 120px; flex-shrink: 0;">
+          <div class="ml-4">
             <h1 class="text-xl md:text-2xl text-gray-300 font-semibold">
                 {{ request.user.username }}
                 <span x-show="userGroups.length > 0" class="text-gray-500" style="font-style: italic;font-weight: 350;">
@@ -35,94 +34,98 @@
         <!-- Главная -->
         <div x-show.immediate="showSettingsPage == false">
           <div x-show.transition="showSettingsPage == false">
-            <!-- Приветствие -->
             <div class="flex justify-between items-center" style="padding-top: 4rem; margin-left: 120px; justify-content: end;">
               <div x-data="{
                   showSettingsPage: false,
                   buttonsVisible: false,
                   isRotating: false,
-                  rotationDirection: 'left'
+                  rotationDirection: 'left',
+                  colorPickerVisible: false,
+                  colorPickerAnimating: false,
+                  closeAll() {
+                    if (this.colorPickerVisible) {
+                      this.colorPickerVisible = false;
+                      setTimeout(() => {
+                        this.buttonsVisible = false;
+                        setTimeout(() => {
+                          this.isRotating = false; // Останавливаем вращение только после закрытия ВСЕХ блоков
+                        }, 300); // Ждем завершения анимации кнопок
+                      }, 300); // Ждем завершения анимации цветов
+                    } else {
+                      this.buttonsVisible = false;
+                      setTimeout(() => {
+                        this.isRotating = false; // Останавливаем после анимации кнопок
+                      }, 300);
+                    }
+                  }
                 }">
-                <div class="flex justify-end items-center"> <!-- Изменил justify-between на justify-end -->
-                    <div class="h-10 w-1 mr-2 rounded-full" :class="`bg-${colorSelected.value}-600`"></div>
-                      <!-- Кнопки (скрытые по умолчанию) -->
-                      <div class="flex space-x-2 overflow-hidden transition-all duration-500 ease-in-out"
-                           x-ref="buttonsContainer"
-                           :style="buttonsVisible ? 'max-width: 200px; opacity: 1;' : 'max-width: 0; opacity: 0;'">
-                        <a @click.prevent="showSettingsPage = !showSettingsPage" href="#" class="rounded-lg px-3 py-2 font-medium inline-flex whitespace-nowrap"
-                           :class="`text-${colorSelected.value}-500 bg-${colorSelected.value}-800 hover:bg-${colorSelected.value}-700`">
-                          <i class="uil bx bxs-color-fill text-left mr-1" style="font-size: larger;"></i>Тема</a>
-                        <a href="/logout" class="rounded-lg px-3 py-2 font-medium inline-flex items-center whitespace-nowrap"
-                           :class="`text-${colorSelected.value}-500 bg-${colorSelected.value}-800 hover:bg-${colorSelected.value}-700`">
-                          <i class="uil uil-sign-out-alt mr-1"></i>Выход</a>
-                      </div>
+                <div class="flex justify-end items-center">
+                  <div class="h-10 w-1 mr-2 rounded-full" :class="`bg-${colorSelected.value}-600`"></div>
 
-                      <!-- Шестеренка -->
-                        <button @click="
-                          if (!isRotating) {
-                            isRotating = true;
-                            const wasVisible = buttonsVisible;
-                            buttonsVisible = !buttonsVisible;
-                            setTimeout(() => { isRotating = false }, 500);
-                          }
-                        " class="ml-2 focus:outline-none flex items-center justify-center w-8 h-8">
-                          <i class="bx bxs-cog"
-                             :class="`text-${colorSelected.value}-500 hover:text-${colorSelected.value}-600`"
-                             x-data="{ currentRotation: 0 }"
-                             :style="`
-                               transform: rotate(${buttonsVisible ? '-180deg' : '0deg'});
-                               transition: transform 0.5s ease-in-out;
-                               display: inline-block;
-                               width: 1em;
-                               height: 1em;
-                               line-height: 1;
-                               font-size: 2rem;
-                               transform-origin: center;
-                             `"></i>
-                        </button>
-                </div>
-
-                <!-- Блок с цветами темы -->
-                <div x-show="showSettingsPage"
-                     x-transition:enter="transition ease-out duration-300"
-                     x-transition:enter-start="opacity-0 translate-x-64"
-                     x-transition:enter-end="opacity-100 translate-x-0"
-                     x-transition:leave="transition ease-in duration-300"
-                     x-transition:leave-start="opacity-100 translate-x-0"
-                     x-transition:leave-end="opacity-0 translate-x-64"
-                     class="fixed top-0 mt-2 bg-gray-800 p-4 rounded-lg shadow-lg z-10 transform"
-                     style="top: 7rem; width: 14rem; right: 1rem;">
-                  <div class="bg-gray-900 rounded-lg shadow-md" style="padding: 10px; max-width: 42rem;">
-                    <div class="px-1 w-full">
-                      <div class="flex flex-wrap -mx-2 justify-center">
-                        <!-- Список цветов -->
+                  <!-- Основной контейнер -->
+                  <div class="flex items-center">
+                    <!-- Блок цветов -->
+                    <div class="flex items-center overflow-hidden transition-all duration-300 ease-in-out"
+                         x-ref="colorPickerContainer"
+                         :style="colorPickerVisible ? 'max-width: 462px; opacity: 1; margin-right: 8px;' : 'max-width: 0; opacity: 0; margin-right: 0;'">
+                      <div class="p-2 rounded-lg shadow-lg flex space-x-2 items-center" :class="`bg-${colorSelected.value}-900`">
                         <template x-for="(color, index) in colors" :key="index">
-                          <div class="px-2" style="margin-top: 5px">
-                            <template x-if="colorSelected.value === color.value">
-                              <div class="w-8 h-8 inline-flex rounded-full cursor-pointer border-4 border-white"
-                                   :style="`background: ${color.label}; box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.2);`"></div>
-                            </template>
-                            <template x-if="colorSelected.value != color.value">
-                              <div @click="colorSelected = color"
-                                   class="w-8 h-8 inline-flex rounded-full cursor-pointer border-4 border-gray-500"
-                                   :style="`background: ${color.label};`"></div>
-                            </template>
-                          </div>
+                          <div @click="colorSelected = color"
+                               class="w-8 h-8 rounded-full cursor-pointer border-4"
+                               :class="colorSelected.value === color.value ? 'border-white' : 'border-gray-500'"
+                               :style="`background: ${color.label};`"></div>
                         </template>
-                        <div class="w-full text-center" style="padding-top: 1rem;">
-                          <button type="button"
-                                  @click="saveSettings"
-                                  class="text-white font-semibold py-2 px-4 rounded-lg"
-                                  :class="`bg-${colorSelected.value}-700 hover:bg-${colorSelected.value}-800`">
-                            Сохранить
-                          </button>
-                        </div>
+                        <a @click="saveSettings; colorPickerVisible = false"
+                           class="rounded-lg px-3 py-2 font-medium inline-flex items-center whitespace-nowrap ml-2"
+                           :class="`text-${colorSelected.value}-500 bg-${colorSelected.value}-800 hover:bg-${colorSelected.value}-700`"
+                           style="padding-left: .6rem; padding-right: .6rem; padding-top: .5rem; padding-bottom: .4rem;">
+                          <i class="uil uil-check icon-check"></i>
+                        </a>
                       </div>
                     </div>
+                    <div class="h-10 w-1 mr-2 rounded-full" :class="`bg-${colorSelected.value}-600`"></div>
+
+                    <!-- Кнопки меню -->
+                    <div class="flex space-x-2 overflow-hidden transition-all duration-300 ease-in-out"
+                         x-ref="buttonsContainer"
+                         :style="buttonsVisible ? 'max-width: 200px; opacity: 1;' : 'max-width: 0; opacity: 0;'">
+                      <a @click.prevent="colorPickerVisible = !colorPickerVisible"
+                         href="#" class="rounded-lg px-3 py-2 font-medium inline-flex whitespace-nowrap"
+                         :class="`text-${colorSelected.value}-500 bg-${colorSelected.value}-800 hover:bg-${colorSelected.value}-700`">
+                        <i class="uil bx bxs-color-fill text-left mr-1" style="font-size: larger;"></i>Тема
+                      </a>
+                      <a href="/logout" class="rounded-lg px-3 py-2 font-medium inline-flex items-center whitespace-nowrap"
+                         :class="`text-${colorSelected.value}-500 bg-${colorSelected.value}-800 hover:bg-${colorSelected.value}-700`">
+                        <i class="uil uil-sign-out-alt mr-1"></i>Выход
+                      </a>
+                    </div>
+
+                    <!-- Шестеренка -->
+                    <button @click="
+                      if (!isRotating) {
+                        isRotating = true;
+                        if (buttonsVisible) {
+                          closeAll();
+                        } else {
+                          buttonsVisible = true;
+                          isRotating = false;
+                        }
+                      }
+                    " class="ml-2 focus:outline-none flex items-center justify-center w-8 h-8">
+                      <i class="bx bxs-cog"
+                         :class="`text-${colorSelected.value}-500 hover:text-${colorSelected.value}-600`"
+                         :style="`
+                           transform: rotate(${buttonsVisible ? '-180deg' : '0deg'});
+                           transition: transform 0.5s ease-in-out;
+                           font-size: 2rem;
+                           animation: ${isRotating ? 'spin 0.7s linear infinite' : 'none'};
+                         `"></i>
+                    </button>
                   </div>
                 </div>
               </div>
             </div>
+
             <!-- Конец блока Приветствие -->
 
             <!-- Канбан-доска -->
@@ -130,7 +133,7 @@
               <form id="task-form">
                 {% csrf_token %}
               </form>
-              <div class="flex -mx-4 justify-center pb-2">
+              <div class="flex -mx-4 justify-center pb-2" style="padding-top: 1rem;">
                 <template x-for="board in boards" :key="board">
                   <div class="w-full md:w-1/4 px-4 flex-shrink-0" style="max-width: 320px;"> <!-- Добавлен flex-shrink-0 и max-width -->
                     <div class="bg-gray-800 pb-4 rounded-lg shadow overflow-y-auto overflow-x-hidden border-t-8" style="min-height: 100px" :class="{
