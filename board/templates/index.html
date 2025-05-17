@@ -88,15 +88,19 @@
                     <!-- Кнопки меню -->
                     <div class="flex space-x-2 overflow-hidden transition-all duration-300 ease-in-out"
                          x-ref="buttonsContainer"
-                         :style="buttonsVisible ? 'max-width: 200px; opacity: 1;' : 'max-width: 0; opacity: 0;'">
+                         :style="buttonsVisible ? 'max-width: 400px; opacity: 1;' : 'max-width: 0; opacity: 0;'">
                       <a @click.prevent="colorPickerVisible = !colorPickerVisible"
-                         href="#" class="rounded-lg px-3 py-2 font-medium inline-flex whitespace-nowrap"
+                         href="#" class="items-center rounded-lg px-3 py-2 font-medium inline-flex whitespace-nowrap"
                          :class="`text-${colorSelected.value}-500 bg-${colorSelected.value}-800 hover:bg-${colorSelected.value}-700`">
-                        <i class="uil bx bxs-color-fill text-left mr-1" style="font-size: larger;"></i>Тема
+                        <i class="uil bx bxs-color-fill text-left mr-1 icon-check" style="font-size: larger;"></i>Тема
                       </a>
-                      <a href="/logout" class="rounded-lg px-3 py-2 font-medium inline-flex items-center whitespace-nowrap"
+                      <a href="/export-excel" class="items-center rounded-lg px-3 py-2 font-medium inline-flex whitespace-nowrap"
                          :class="`text-${colorSelected.value}-500 bg-${colorSelected.value}-800 hover:bg-${colorSelected.value}-700`">
-                        <i class="uil uil-sign-out-alt mr-1"></i>Выход
+                        <i class="uil uil-file-download mr-1 icon-check"></i>Отчет
+                      </a>
+                      <a href="/logout" class="items-center rounded-lg px-3 py-2 font-medium inline-flex whitespace-nowrap"
+                         :class="`text-${colorSelected.value}-500 bg-${colorSelected.value}-800 hover:bg-${colorSelected.value}-700`">
+                        <i class="uil uil-sign-out-alt mr-1 icon-check"></i>Выход
                       </a>
                     </div>
 
@@ -908,7 +912,14 @@ document.addEventListener('alpine:init', () => {
             } else {
                 document.body.classList.remove('overflow-hidden', 'pr-[15px]');
             }
-        }
+        },
+        toggleThemeToLight() {
+          this.colorSelected = {
+            label: '#718096',
+            value: 'gray'
+          };
+          this.saveSettings();
+        },
     });
 });
 
@@ -1166,6 +1177,7 @@ function board() {
                     }
                 }
         },
+
 
         getData() {
             const themeFromLocalStorage = JSON.parse(localStorage.getItem('KB-theme'));

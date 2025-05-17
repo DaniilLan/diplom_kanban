@@ -11,6 +11,14 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from .models import UsersGroup
+from django.http import HttpResponse
+from openpyxl import Workbook
+from openpyxl.styles import Font, Alignment, Border, Side, PatternFill
+from django.db.models import Sum
+from django.utils import timezone
+from .models import Task, TimeLog, BoardNames, TaskType, PriorityTask
+
+
 
 @login_required
 def home(request):
@@ -103,6 +111,146 @@ def logout_request(request):
     logout(request)
     messages.info(request, 'Вы вышли из аккаунта.')
     return redirect('board:login')
+
+
+def export_to_excel(request):
+    # Создаем новую книгу Excel
+    wb = Workbook()
+    ws = wb.active
+    ws.title = "Kanban Доска"
+
+    # Заголовки столбцов
+    headers = [
+        "ID", "Название", "Описание", "Статус",
+        "Тип", "Приоритет", "Владелец", "Ответственный",
+        "Дата создания", "Оценка времени", "Затраченное время", "Группы"
+    ]
+
+    # Добавляем заголовки
+    for col_num, header in enumerate(headers, 1):
+        cell = ws.cell(row=1, column=col_num, value=header)
+        cell.font = Font(bold=True)
+        cell.alignment = Alignment(horizontal='center')
+        cell.fill = PatternFill(start_color="D3D3D3", end_color="D3D3D3", fill_type="solid")
+
+    # Получаем все задачи пользователя
+    tasks = Task.objects.filter(owner=request.user).order_by('boardName')
+
+    # Добавляем данные
+    for row_num, task in enumerate(tasks, 2):
+        # ID задачи
+        task_type_prefix = 'BUG-' if task.typeTask == TaskType.BUG else 'TASK-'
+        ws.cell(row=row_num, column=1, value=f"{task_type_prefix}{task.task_id}")
+
+        # Основные данные
+        ws.cell(row=row_num, column=2, value=task.name)
+        ws.cell(row=row_num, column=3, value=task.description or "")
+
+        # Статус - преобразуем через BoardNames
+        status_mapping = {
+            BoardNames.ToDo: 'Сделать',
+            BoardNames.ReOpen: 'Переоткрыто',
+            BoardNames.InProgress: 'В работе',
+            BoardNames.Review: 'На проверке',
+            BoardNames.InTest: 'В тестировании',
+            BoardNames.Done: 'Выполнено'
+        }
+        ws.cell(row=row_num, column=4, value=status_mapping.get(task.boardName, task.boardName))
+
+        # Тип задачи - используем get_typeTask_display()
+        ws.cell(row=row_num, column=5, value=task.get_typeTask_display())
+
+        # Приоритет - используем get_priorityTask_display()
+        ws.cell(row=row_num, column=6, value=task.get_priorityTask_display())
+
+        # Владелец и ответственный
+        ws.cell(row=row_num, column=7, value=task.owner.username)
+        responsible = task.responsible.username if task.responsible else ""
+        ws.cell(row=row_num, column=8, value=responsible)
+
+        # Дата создания
+        ws.cell(row=row_num, column=9, value=task.date.strftime('%Y-%m-%d %H:%M'))
+
+        # Оценка времени
+        estimate_time = convert_minutes_to_readable(task.timeEstimateMinutes)
+        ws.cell(row=row_num, column=10, value=estimate_time)
+
+        # Затраченное время
+        total_minutes = TimeLog.objects.filter(task=task).aggregate(total=Sum('minutesSpent'))['total'] or 0
+        spent_time = convert_minutes_to_readable(total_minutes)
+        ws.cell(row=row_num, column=11, value=spent_time)
+
+        # Группы
+        groups = ", ".join([group.name for group in task.groups.all()])
+        ws.cell(row=row_num, column=12, value=groups)
+
+    # Настраиваем ширину столбцов
+    column_widths = {
+        'A': 15,  # ID
+        'B': 40,  # Название
+        'C': 60,  # Описание
+        'D': 15,  # Статус
+        'E': 10,  # Тип
+        'F': 12,  # Приоритет
+        'G': 15,  # Владелец
+        'H': 15,  # Ответственный
+        'I': 20,  # Дата создания
+        'J': 15,  # Оценка времени
+        'K': 15,  # Затраченное время
+        'L': 30  # Группы
+    }
+
+    for col_letter, width in column_widths.items():
+        ws.column_dimensions[col_letter].width = width
+
+    # Добавляем границы и выравнивание
+    thin_border = Border(
+        left=Side(style='thin'),
+        right=Side(style='thin'),
+        top=Side(style='thin'),
+        bottom=Side(style='thin')
+    )
+
+    for row in ws.iter_rows(min_row=1, max_row=ws.max_row, max_col=len(headers)):
+        for cell in row:
+            cell.border = thin_border
+            if cell.column_letter in ['C', 'L']:  # Описание и группы
+                cell.alignment = Alignment(wrap_text=True, vertical='top')
+            else:
+                cell.alignment = Alignment(vertical='center')
+
+    # Фиксируем заголовки
+    ws.freeze_panes = 'A2'
+
+    # Создаем HTTP-ответ с файлом Excel
+    response = HttpResponse(
+        content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    )
+    response['Content-Disposition'] = f'attachment; filename=kanban_board_{timezone.now().strftime("%Y-%m-%d")}.xlsx'
+    wb.save(response)
+
+    return response
+
+
+def convert_minutes_to_readable(minutes):
+    """Конвертирует минуты в читаемый формат (дни, часы, минуты)"""
+    if not minutes:
+        return "0м"
+
+    days = minutes // (8 * 60)  # Предполагаем 8-часовой рабочий день
+    remaining = minutes % (8 * 60)
+    hours = remaining // 60
+    mins = remaining % 60
+
+    parts = []
+    if days > 0:
+        parts.append(f"{days}д")
+    if hours > 0:
+        parts.append(f"{hours}ч")
+    if mins > 0 or not parts:
+        parts.append(f"{mins}м")
+
+    return " ".join(parts)
 
 
 @api_view(['GET'])

@@ -1,6 +1,7 @@
 from django.urls import path
 
 from . import views
+from .views import export_to_excel
 
 app_name = 'board'
 
@@ -13,4 +14,5 @@ urlpatterns = [
     path('api/tasks/<uuid:task_uuid>/members/', views.get_task_group_members, name='task_group_members'),
     path('api/user/groups/', views.get_user_groups, name='user_groups'),
     path('api/tasks/<uuid:task_uuid>/groups/', views.get_task_groups, name='task_groups'),
+    path('export-excel/', export_to_excel, name='export_excel'),
 ]
