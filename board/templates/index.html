@@ -12,8 +12,19 @@
 
       <!-- Хедер -->
       <div class="bg-cover bg-center bg-no-repeat" :class="`bg-${colorSelected.value}-900`" :style="`background-image: url(${bannerImage})`">
-        <div class="container mx-auto"></div>
-        <img src="static/icon_web.png" alt="Иконка сайта" style="height: 100px; padding-left: 1rem;">
+        <div class="container mx-auto flex items-center" style="display: inline-flex;">
+          <img src="static/icon_web.png" alt="Иконка сайта" style="height: 100px; width: 100px; flex-shrink: 0;"> <!-- Добавлены width и flex-shrink -->
+          <div class="ml-4" style="margin-left: 15rem;"> <!-- Добавлен отступ слева -->
+            <!-- Ваш текущий блок приветствия -->
+            <h1 class="text-xl md:text-2xl text-gray-300 font-semibold">
+                {{ request.user.username }}
+                <span x-show="userGroups.length > 0" class="text-gray-500" style="font-style: italic;font-weight: 350;">
+                    - <span x-text="userGroups.map(group => group.name).join(', ')"></span>
+                </span>
+            </h1>
+            <div class="text-sm" :class="`text-${colorSelected.value}-400`">{% now 'SHORT_DATE_FORMAT' %}</div>
+          </div>
+        </div>
       </div>
       <!-- конец хедера -->
 
@@ -25,16 +36,7 @@
         <div x-show.immediate="showSettingsPage == false">
           <div x-show.transition="showSettingsPage == false">
             <!-- Приветствие -->
-            <div class="flex justify-between items-center" style="padding-top: 4rem;">
-              <div>
-                <h1 class="text-xl md:text-2xl text-gray-300 font-semibold">
-                    {{ request.user.username }}
-                    <span x-show="userGroups.length > 0" class="text-gray-500" style="font-style: italic;font-weight: 350;">
-                        - <span x-text="userGroups.map(group => group.name).join(', ')"></span>
-                    </span>
-                </h1>
-                <div class="text-sm" :class="`text-${colorSelected.value}-400`">{% now 'SHORT_DATE_FORMAT' %}</div>
-              </div>
+            <div class="flex justify-between items-center" style="padding-top: 4rem; margin-left: 120px; justify-content: end;">
               <div x-data="{
                   showSettingsPage: false,
                   buttonsVisible: false,
