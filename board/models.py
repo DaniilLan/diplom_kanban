@@ -4,8 +4,10 @@ from django.db.models import Max
 
 class BoardNames(models.TextChoices):
     ToDo = 'Сделать'
-    InProgress = 'В процессе'
+    ReOpen = 'Переоткрыто'
+    InProgress = 'В работе'
     Review = 'На проверке'
+    InTest = 'В тестировании'
     Done = 'Выполнено'
 
 
@@ -69,7 +71,7 @@ class Task(models.Model):
     uuid = models.UUIDField(default=uuid.uuid4, unique=True, primary_key=True, editable=False)
     task_id = models.PositiveIntegerField(unique=True, null=True, blank=True)
     name = models.CharField(max_length=500)
-    boardName = models.CharField(max_length=12, choices=BoardNames.choices, default=BoardNames.ToDo)
+    boardName = models.CharField(max_length=15, choices=BoardNames.choices, default=BoardNames.ToDo)
     date = models.DateTimeField(auto_now_add=True)
     description = models.TextField(null=True, blank=True, verbose_name="Подробное описание")
     typeTask = models.CharField(max_length=4, choices=TaskType.choices, null=True, blank=True)

@@ -17,7 +17,7 @@
       </div>
       <!-- конец хедера -->
 
-      <div class="container mx-auto px-4 py-4 -mt-40">
+      <div class="container mx-auto px-4 py-4 -mt-40" style="max-width: 1920px;">
 
         {% include 'settings.html' %}
 
@@ -125,18 +125,19 @@
 
             <!-- Канбан-доска -->
             <div style="padding-top: 3rem; padding-bottom: 2rem;">
-            <form id="task-form">
-              {% csrf_token %}
-            </form>
-              <div class="flex -mx-4 block overflow-x-auto pb-2">
+              <form id="task-form">
+                {% csrf_token %}
+              </form>
+              <div class="flex -mx-4 justify-center pb-2">
                 <template x-for="board in boards" :key="board">
-                  <div class="w-1/2 md:w-1/4 px-4 flex-shrink-0 flex-grow">
+                  <div class="w-full md:w-1/4 px-4 flex-shrink-0" style="max-width: 320px;"> <!-- Добавлен flex-shrink-0 и max-width -->
                     <div class="bg-gray-800 pb-4 rounded-lg shadow overflow-y-auto overflow-x-hidden border-t-8" style="min-height: 100px" :class="{
-                        'border-red-500': board === boards[0],
-                        'border-yellow-500': board === boards[1],
-                        'border-blue-500': board === boards[2],
-                        'border-green-500': board === boards[3],
-                      }">
+                            'border-red-500': board === boards[0],
+                            'border-yellow-500': board === boards[1],
+                            'border-blue-500': board === boards[2] || board === boards[3],
+                            'border-purple-500': board === boards[4],
+                            'border-green-500': board === boards[5]
+                        }">
                       <div class="flex justify-between items-center px-4 py-2 bg-gray-800 sticky top-0">
                         <div class="flex items-center">
                             <h2 x-text="board" class="font-medium text-gray-300 mr-2"></h2>
@@ -966,8 +967,10 @@ function board() {
 
         boards: [
           'Сделать',
-          'В процессе',
+          'Переоткрыто',
+          'В работе',
           'На проверке',
+          'В тестировании',
           'Выполнено'
         ],
         task: {

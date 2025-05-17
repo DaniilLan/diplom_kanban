@@ -20,7 +20,7 @@ class Migration(migrations.Migration):
             fields=[
                 ('uuid', models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True, serialize=False, unique=True)),
                 ('name', models.CharField(blank=True, max_length=500, null=True)),
-                ('boardName', models.CharField(choices=[('Сделать', 'Todo'), ('В процессе', 'Inprogress'), ('На проверке', 'Review'), ('Выполнено', 'Done')], default='Сделать', max_length=12)),
+                ('boardName', models.CharField(choices=[('Сделать', 'Todo'), ('В работе', 'Inprogress'), ('На проверке', 'Review'), ('Выполнено', 'Done')], default='Сделать', max_length=12)),
                 ('date', models.DateTimeField(auto_now_add=True)),
                 ('user', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='tasks', to=settings.AUTH_USER_MODEL)),
             ],
