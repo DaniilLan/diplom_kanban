@@ -53,6 +53,12 @@ def create_test_data():
             {'name': 'Добавить цветовые маркеры', 'description': 'Реализовать цветовую индикацию для статусов задач', 'typeTask': TaskType.TASK, 'priorityTask': PriorityTask.LOW, 'timeEstimateMinutes': 90},
             {'name': 'Создать API для задач', 'description': 'Разработать REST API для работы с задачами', 'typeTask': TaskType.TASK, 'priorityTask': PriorityTask.HIGH, 'timeEstimateMinutes': 300},
         ],
+        BoardNames.ReOpen: [
+            {'name': 'Пересмотреть архитектуру БД', 'description': 'Доработка ER-диаграммы по новым требованиям', 'typeTask': TaskType.TASK, 'priorityTask': PriorityTask.HIGH, 'timeEstimateMinutes': 120},
+            {'name': 'Повторное тестирование авторизации', 'description': 'Проверка исправлений после бага с регистрацией', 'typeTask': TaskType.BUG, 'priorityTask': PriorityTask.MEDIUM, 'timeEstimateMinutes': 90},
+            {'name': 'Обновить документацию API', 'description': 'Внесение изменений по новым endpoint', 'typeTask': TaskType.TASK, 'priorityTask': PriorityTask.MEDIUM, 'timeEstimateMinutes': 60},
+            {'name': 'Исправить баг: потеря данных при drag-and-drop', 'description': 'Повторное появление бага при перемещении задач', 'typeTask': TaskType.BUG, 'priorityTask': PriorityTask.HIGH, 'timeEstimateMinutes': 180},
+        ],
         BoardNames.InProgress: [
             {'name': 'Реализовать drag-and-drop', 'description': 'Добавить функционал перемещения задач между колонками', 'typeTask': TaskType.TASK, 'priorityTask': PriorityTask.HIGH, 'timeEstimateMinutes': 240},
             {'name': 'Разработать главную страницу', 'description': 'Создать шаблон главной страницы с канбан-доской', 'typeTask': TaskType.TASK, 'priorityTask': PriorityTask.MEDIUM, 'timeEstimateMinutes': 180},
@@ -91,9 +97,9 @@ def create_test_data():
         ]
     }
 
-    # Создаем задачи для каждой колонки
     for board_name, tasks in tasks_data.items():
         for task_data in tasks:
+            # Создаем задачу и сразу связываем с группой
             task = Task.objects.create(
                 owner=user,
                 responsible=user,
@@ -105,8 +111,11 @@ def create_test_data():
                 timeEstimateMinutes=task_data['timeEstimateMinutes'],
                 date=timezone.now()
             )
-            task.groups.add(group)
-            task.save()
+            # Привязываем задачу к группе через промежуточную таблицу
+            Task.groups.through.objects.create(
+                task_id=task.uuid,
+                group_id=group.uuid
+            )
 
     # Добавляем лог времени для некоторых задач
     time_logs = [
@@ -128,6 +137,7 @@ def create_test_data():
             )
 
     print("Тестовые данные успешно созданы!")
+
 
 if __name__ == '__main__':
     create_test_data()

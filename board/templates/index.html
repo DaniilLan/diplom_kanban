@@ -158,12 +158,12 @@
                           <i class="uil uil-book-medical mr-1"></i>Добавить
                         </a>
                       </div>
-                      <div class="px-4 shake">
+                      <div class="px-4">
                         <div @dragover="onDragOver(event)" @drop="onDrop(event, board)" @dragenter="onDragEnter(event)" @dragleave="onDragLeave(event)" class="pt-2 pb-20 rounded-lg">
                           <template x-for="(t, taskIndex) in tasks.filter(t => t.boardName === board)" :key="taskIndex">
                             <div :id="t.uuid">
                               <div x-show="t.edit == false">
-                                <div x-show="t.edit == false" class="bg-gray-900 rounded-lg shadow mb-3 p-2" draggable="true" @dragstart="onDragStart(event, t.uuid)">
+                                <div x-show="t.edit == false" class="shake bg-gray-900 rounded-lg shadow mb-3 p-2" draggable="true" @dragstart="onDragStart(event, t.uuid)">
                                   <div class="flex justify-between items-center">
                                       <a x-text="(t.typeTask === 'bug' ? 'BUG-' : 'TASK-') + t.task_id" @click.prevent="showModalEdit(board, t.uuid, t.name, t.description, t.typeTask, t.priorityTask, t.timeEstimateMinutes, t.responsible)" href="#" class="inline-flex items-center text-sm font-medium" :class="`text-${colorSelected.value}-500 hover:text-${colorSelected.value}-600`"></a>
                                       <div class="flex items-center">
@@ -842,14 +842,40 @@ const api_client = axios.create({
 
 const addTask = async (name, board, description, taskType, priorityTask, timeEstimate, responsible, selectedGroups) => {
   try {
-    if(!name.trim()) {
+    // Валидация заголовка
+    if (!name.trim()) {
       alert('Укажите название задачи');
       return;
     }
-    console.log('Selected Groups UUIDs:', this.selectedGroups);
-    console.log('User Groups:', this.userGroups);
-    const timeEstimateMinutes = parseTimeInput(timeEstimate) || 0;
-    const groupUUIDs = this.selectedGroups;
+
+    // Валидация групп
+    if (selectedGroups.length === 0) {
+      alert('Выберите хотя бы одну группу');
+      return;
+    }
+
+    // Валидация ответственного
+    if (!responsible) {
+      alert('Укажите ответственного');
+      return;
+    }
+
+    // Валидация оценки времени
+    const timeEstimateMinutes = parseTimeInput(timeEstimate);
+    if (isNaN(timeEstimateMinutes)) {
+      alert('Некорректный формат времени');
+      return;
+    }
+    if (timeEstimateMinutes <= 0) {
+      alert('Оценка времени должна быть больше 0');
+      return;
+    }
+
+    // Валидация типа и приоритета
+    if (!taskType || !priorityTask) {
+      alert('Укажите тип и приоритет задачи');
+      return;
+    }
 
     const res = await api_client.post('/tasks/', {
       name: name.trim(),
@@ -858,11 +884,11 @@ const addTask = async (name, board, description, taskType, priorityTask, timeEst
       typeTask: taskType,
       priorityTask: priorityTask,
       timeEstimateMinutes,
-      responsible: responsible || '{{ request.user.username }}',
+      responsible: responsible,
       groups: selectedGroups,
     });
 
-    if(res.status === 201) {
+    if (res.status === 201) {
       openModalAdd = false;
       location.reload();
     }
