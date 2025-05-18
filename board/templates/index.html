@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 
 {% block title %}
-Канбан-доска на Django, DRF & Alpine.js
+FlowBoard
 {% endblock %}
 
 {% block content %}
@@ -12,8 +12,16 @@
 
       <!-- Хедер -->
       <div class="bg-cover bg-center bg-no-repeat" :class="`bg-${colorSelected.value}-900`" :style="">
-        <div class="container mx-auto flex items-center" style="display: inline-flex; padding-left: 1rem;">
+        <div class="container mx-auto flex items-center" style="padding-left: 1rem; margin-left: inherit;">
           <img src="static/icon_web.png" alt="Иконка сайта" style="height: 100px; width: 120px; flex-shrink: 0;">
+            <div class="mx-4 flex flex-col items-center">
+              <div class="h-1 w-16 mb-1 rounded-full" :class="`bg-${colorSelected.value}-600`"></div>
+              <h1 class="text-3xl font-bold bg-clip-text text-transparent"
+                  :class="`bg-gradient-to-r from-${colorSelected.value}-100 to-${colorSelected.value}-500`">
+                FlowBoard
+              </h1>
+              <div class="h-1 w-16 mt-1 rounded-full" :class="`bg-${colorSelected.value}-600`"></div>
+            </div>
           <div class="ml-4">
             <h1 class="text-xl md:text-2xl text-gray-300 font-semibold">
                 {{ request.user.username }}
