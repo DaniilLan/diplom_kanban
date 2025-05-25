@@ -71,40 +71,34 @@ def register_request(request):
     if request.method == 'POST':
         form = NewUserForm(request.POST)
         if form.is_valid():
-            user = form.save()
-            login(request, user)
+            login(request, form.save())
             messages.success(request,
-                             'Аккаунт зарегистрирован: '
-                             'добро пожаловать на сайт!')
+                             'Аккаунт создан! Добро пожаловать!')
             return redirect('board:login')
-        messages.error(request, 'Не удалось зарегистрировать аккаунт. '
-                                'Проверьте корректность данных и '
+        messages.error(request, 'Не удалось создать аккаунт. '
+                                'Проверьте введенные данных и '
                                 'попробуйте еще раз!')
-    form = NewUserForm()
     return render(request=request,
                   template_name='register.html',
-                  context={'register_form': form})
+                  context={'register_form': NewUserForm()})
 
 
 def login_request(request):
     if request.method == 'POST':
         form = AuthenticationForm(request, data=request.POST)
         if form.is_valid():
-            username = form.cleaned_data.get('username')
-            password = form.cleaned_data.get('password')
-            user = authenticate(username=username, password=password)
+            user = authenticate(username=form.cleaned_data.get('username'), password=form.cleaned_data.get('password'))
             if user is not None:
                 login(request, user)
                 messages.info(request,
-                              f'Вы вошли на сайт под ником {username}.')
+                              f'Вы вошли на сайт под ником {form.cleaned_data.get('username')}.')
                 return redirect('board:home')
             else:
-                messages.error(request, 'Неверные имя и/или пароль.')
+                messages.error(request, 'Неверные имя или пароль.')
         else:
-            messages.error(request, 'Неверные имя и/или пароль.')
-    form = AuthenticationForm()
+            messages.error(request, 'Неверные имя или пароль.')
     return render(request=request, template_name='login.html',
-                  context={'login_form': form})
+                  context={'login_form': AuthenticationForm()})
 
 
 def logout_request(request):

@@ -33,7 +33,6 @@ FlowBoard
           </div>
         </div>
       </div>
-      <!-- конец хедера -->
 
       <div class="container mx-auto px-4 py-4 -mt-40" style="max-width: 1920px;">
 
@@ -114,24 +113,24 @@ FlowBoard
 
                     <!-- Шестеренка -->
                     <button @click="
-                      if (!isRotating) {
-                        isRotating = true;
-                        if (buttonsVisible) {
-                          closeAll();
-                        } else {
-                          buttonsVisible = true;
-                          isRotating = false;
-                        }
-                      }
-                    " class="ml-2 focus:outline-none flex items-center justify-center w-8 h-8">
-                      <i class="bx bxs-cog"
-                         :class="`text-${colorSelected.value}-500 hover:text-${colorSelected.value}-600`"
-                         :style="`
-                           transform: rotate(${buttonsVisible ? '-180deg' : '0deg'});
-                           transition: transform 0.5s ease-in-out;
-                           font-size: 2rem;
-                           animation: ${isRotating ? 'spin 0.7s linear infinite' : 'none'};
-                         `"></i>
+                          if (!isRotating) {
+                            isRotating = true;
+                            if (buttonsVisible) {
+                              closeAll();
+                            } else {
+                              buttonsVisible = true;
+                              isRotating = false;
+                            }
+                          }
+                        " class="ml-2 focus:outline-none flex items-center justify-center w-8 h-8">
+                          <i class="bx bxs-cog"
+                             :class="`text-${colorSelected.value}-500 hover:text-${colorSelected.value}-600`"
+                             :style="`
+                               transform: rotate(${buttonsVisible ? '-180deg' : '0deg'});
+                               transition: transform 0.5s ease-in-out;
+                               font-size: 2rem;
+                               animation: ${isRotating ? 'spin 0.7s linear infinite' : 'none'};
+                             `"></i>
                     </button>
                   </div>
                 </div>
@@ -982,33 +981,25 @@ function board() {
             value: 'green'
           },
           {
-            label: '#967bb6',
-            value: 'purple'
-          },
-          {
-            label: '#e53e3e',
-            value: 'red'
+            label: '#008080',
+            value: 'teal'
           },
           {
             label: '#ffa500',
             value: 'orange'
           },
           {
-            label: '#0B0B45',
-            value: 'indigo'
+            label: '#ffff00',
+            value: 'yellow'
           },
           {
-            label: '#008080',
-            value: 'teal'
+            label: '#0B0B45',
+            value: 'indigo'
           },
           {
             label: '#718096',
             value: 'gray'
           },
-          {
-            label: '#ffff00',
-            value: 'yellow'
-          }
         ],
         colorSelected: {
           label: '#3182ce',
