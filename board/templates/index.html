@@ -146,7 +146,7 @@ FlowBoard
               </form>
               <div class="flex -mx-4 justify-center pb-2" style="padding-top: 1rem;">
                 <template x-for="board in boards" :key="board">
-                  <div class="w-full md:w-1/4 px-4 flex-shrink-0" style="max-width: 320px;"> <!-- Добавлен flex-shrink-0 и max-width -->
+                  <div class="w-full md:w-1/4 px-4 flex-shrink-0" style="max-width: 315px;"> <!-- Добавлен flex-shrink-0 и max-width -->
                     <div class="bg-gray-800 pb-4 rounded-lg shadow overflow-y-auto overflow-x-hidden border-t-8" style="min-height: 100px" :class="{
                             'border-red-500': board === boards[0],
                             'border-yellow-500': board === boards[1],
@@ -245,7 +245,7 @@ FlowBoard
 
     <!-- Футер -->
     <div class="container mx-auto px-4 py-10">
-      <p class="text-gray-600 text-center"><strong><i class="uil uil-edit mr-1"></i>Пример гибрида Kanban и Scrum,</strong> работает на <a href="https://www.django-rest-framework.org/" :class="`text-${colorSelected.value}-500 hover:text-${colorSelected.value}-600`">Django REST Framework</a> и <a href="https://alpinejs.dev/" :class="`text-${colorSelected.value}-500 hover:text-${colorSelected.value}-600`">AlpineJS</a>.</p>
+      <p class="text-gray-600 text-center"><strong><i class="uil uil-edit mr-1"></i>Пример гибрида Kanban и Scrum,</strong>
     </div>
     <!-- конец футера -->
 
