@@ -186,14 +186,14 @@ FlowBoard
                                     <div x-text="t.name" class="text-gray-300"></div>
                                     <div x-text="t.date" class="text-gray-500 text-xs mt-2"></div>
                                     <div class="text-left">
-                                        <span x-text="t.totalMinutesSpent"
+                                        <span x-text="t.totalMinutesSpentDisplay"
                                               class="text-xs"
                                               :class="{
                                                   'text-red-500': t.totalMinutesSpent > t.timeEstimateMinutes,
                                                   'text-gray-500': t.totalMinutesSpent <= t.timeEstimateMinutes
                                               }"></span>
                                         <span class="text-gray-500 text-xs">/</span>
-                                        <span x-text="t.timeEstimateMinutes" class="text-gray-500 text-xs"></span>
+                                        <span x-text="t.timeEstimateDisplay" class="text-gray-500 text-xs"></span>
                                     </div>
                                     <div class="item-center flex justify-between">
                                         <div class="text-left">
@@ -1221,8 +1221,8 @@ function board() {
             this.tasks = tasksFromDjango.map(t => {
                 const taskTimelogs = timelogsFromDjango.filter(tl => tl.task === t.uuid);
                 const totalMinutesSpent = taskTimelogs.reduce((acc, tl) => acc + tl.minutesSpent, 0);
-                const timeSpent = convertMinutesToTime(totalMinutesSpent);
-                const timeEstimate = convertMinutesToTime(t.timeEstimateMinutes);
+                const timeSpentString = convertMinutesToTime(totalMinutesSpent);
+                const timeEstimateString = convertMinutesToTime(t.timeEstimateMinutes);
 
                 return {
                     uuid: t.uuid,
@@ -1235,8 +1235,10 @@ function board() {
                     edit: false,
                     typeTask: t.typeTask,
                     priorityTask: t.priorityTask,
-                    timeEstimateMinutes: timeEstimate,
-                    totalMinutesSpent: timeSpent,
+                    timeEstimateMinutes: t.timeEstimateMinutes, // сохраняем как число
+                    timeEstimateDisplay: timeEstimateString,    // строковое представление
+                    totalMinutesSpent: totalMinutesSpent,      // сохраняем как число
+                    totalMinutesSpentDisplay: timeSpentString, // строковое представление
                     responsible: t.responsible,
                 };
             });
